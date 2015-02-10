@@ -277,12 +277,4 @@
 <part>id</part>
 </key>
 </table>
-<table x="976" y="312" name="new table">
-<row name="id" null="1" autoincrement="1">
-<datatype>INTEGER</datatype>
-<default>NULL</default></row>
-<key type="PRIMARY" name="">
-<part>id</part>
-</key>
-</table>
 </sql>
