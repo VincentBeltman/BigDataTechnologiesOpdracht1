@@ -23,6 +23,30 @@ public class apl {
                 case 0:
                     quit = true;
                     break;
+                case 1:
+                    //customers();
+                    break;
+                case 2:
+                    //moviesAlbums();
+                    break;
+                case 3:
+                    //tracks();
+                    break;
+                case 4:
+                    //actors();
+                    break;
+                case 5:
+                    //reservations();
+                    break;
+                case 6:
+                    //loans();
+                    break;
+                case 7:
+                    //genres();
+                    break;
+                case 8:
+                    //search();
+                    break;
                 default:
                     printLine("ERROR command not found.");
                     printLine("Please try again.");
@@ -46,6 +70,14 @@ public class apl {
     {
         printLine("Choose one of the following commands. Type its number and press enter:");
         printLine("0: Quit");
+        printLine("1: Klanten");
+        printLine("2: Films + Albums");
+        printLine("3: Nummers");
+        printLine("4: Actuer");
+        printLine("5: Resrvering");
+        printLine("6: Uitlening");
+        printLine("7: Genres");
+        printLine("8: Zoeken");
         Scanner scan = new Scanner(System.in);
         try{
             return scan.nextInt();
@@ -55,4 +87,6 @@ public class apl {
             return showCommands();
         }
     }
+
+
 }
