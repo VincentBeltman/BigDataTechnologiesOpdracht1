@@ -3,12 +3,17 @@ package nl.saxion.bd.opdracht1;
 import java.util.Scanner;
 
 /**
+ * This file contains the choosemenu's. The menu is mend to guide the user through the program.
+ * After the user made his choice, this class will call the right method of the database handler.
  * Created by Vincent on 12-2-2015.
  */
 public class Menu {
+    /** The scanner for reading the user input. */
     private Scanner scan;
+    /** The handler for the database. */
     private DatabaseHandler dh;
 
+    /** Constructor of menu. When constructed, it will automatically print the main menu. */
     public Menu()
     {
         printLine("Opstarten...");
@@ -50,16 +55,27 @@ public class Menu {
         printLine("Quiting program");
     }
 
+    /**
+     * Method for printing stripes to make the console more readable.
+     */
     public static void printStripes()
     {
         printLine("-----------------------------------");
     }
 
+    /**
+     * Cause System.out.println takes too much time to type. Only works on strings though.
+     * @param print The string to be printed.
+     */
     public static void printLine(String print)
     {
         System.out.println(print);
     }
 
+    /**
+     * Shows the main menu commands. And returns the user input.
+     * @return A valid command of the user.
+     */
     public int showCommands()
     {
         String[] choices = new String[7];
@@ -73,6 +89,9 @@ public class Menu {
         return printChoices(choices);
     }
 
+    /**
+     * Shows the sub-menu of customers.
+     */
     public void customers()
     {
         printLine("KLANTEN");
@@ -98,6 +117,9 @@ public class Menu {
         }
     }
 
+    /**
+     * Shows the sub-menu of albums.
+     */
     public void moviesAlbums()
     {
         printLine("FILMS + ALBUMS");
@@ -126,6 +148,9 @@ public class Menu {
         }
     }
 
+    /**
+     * Shows the sub-menu of actors.
+     */
     public void actors()
     {
         printLine("ARTIESTEN");
@@ -147,6 +172,9 @@ public class Menu {
         }
     }
 
+    /**
+     * Shows the sub-menu of reservations.
+     */
     public void reservations()
     {
         printLine("RESERVATIES");
@@ -164,6 +192,9 @@ public class Menu {
         }
     }
 
+    /**
+     * Shows the sub-menu of loans.
+     */
     public void loans()
     {
         printLine("LENINGEN");
@@ -189,6 +220,9 @@ public class Menu {
         }
     }
 
+    /**
+     * Shows the sub-menu of search.
+     */
     public void search()
     {
         printLine("ZOEKEN");
@@ -222,6 +256,14 @@ public class Menu {
         }
     }
 
+    /**
+     * Prints the given choises and waits for user input.
+     * After the user input is given, it will check whether it is valid.
+     * The user input is valid if its bigger than 0 and smaller than the length of the list.
+     * If the user input is not valid it will ask the user to retry.
+     * @param choices The choises the user may choose from.
+     * @return The valid user input
+     */
     public int printChoices(String[] choices)
     {
         printLine("Kies één van de volgende commando's");
