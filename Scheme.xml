@@ -37,22 +37,22 @@
 		<type label="SET" length="1" sql="SET" quote=""/>
 		<type label="Bit" length="0" sql="bit" quote=""/>
 	</group>
-</datatypes><table x="10" y="10" name="movie">
+</datatypes><table x="40" y="71" name="movie">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
 <row name="name" null="1" autoincrement="0">
 <datatype>VARCHAR(150)</datatype>
 <default>NULL</default></row>
-<row name="id_director" null="1" autoincrement="0">
+<row name="director_id" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
-<default>NULL</default><relation table="director" row="id" />
+<default>NULL</default><relation table="person" row="id" />
 </row>
-<row name="organisation_publisher" null="1" autoincrement="0">
+<row name="publisher_organisation" null="1" autoincrement="0">
 <datatype>VARCHAR(100)</datatype>
 <default>NULL</default><relation table="publisher" row="organisation" />
 </row>
-<row name="name_genre" null="0" autoincrement="0">
+<row name="genre_name" null="0" autoincrement="0">
 <datatype>VARCHAR</datatype>
 <default>'NULL'</default><relation table="genre" row="name" />
 </row>
@@ -60,21 +60,21 @@
 <part>id</part>
 </key>
 </table>
-<table x="180" y="10" name="album">
+<table x="1049" y="444" name="album">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
 <row name="name" null="1" autoincrement="0">
 <datatype>VARCHAR(150)</datatype>
 <default>NULL</default></row>
-<row name="id_artist" null="0" autoincrement="0">
+<row name="artist_id" null="0" autoincrement="0">
 <datatype>INTEGER</datatype>
-<default>NULL</default><relation table="artist" row="id" />
+<default>NULL</default><relation table="person" row="id" />
 </row>
 <row name="release_date" null="1" autoincrement="0">
 <datatype>DATE</datatype>
 <default>NULL</default></row>
-<row name="organisation_publisher" null="1" autoincrement="0">
+<row name="publisher_organisation" null="1" autoincrement="0">
 <datatype>VARCHAR(100)</datatype>
 <default>NULL</default><relation table="publisher" row="organisation" />
 </row>
@@ -84,19 +84,15 @@
 <key type="INDEX" name="">
 </key>
 </table>
-<table x="350" y="10" name="resevation">
+<table x="1388" y="83" name="reservation_album">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
-<row name="id_customer" null="1" autoincrement="0">
+<row name="customer_id" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="customer" row="id" />
 </row>
-<row name="id_movie" null="1" autoincrement="0">
-<datatype>INTEGER</datatype>
-<default>NULL</default><relation table="movie" row="id" />
-</row>
-<row name="id_album" null="1" autoincrement="0">
+<row name="album_id" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="album" row="id" />
 </row>
@@ -104,17 +100,17 @@
 <part>id</part>
 </key>
 </table>
-<table x="491" y="10" name="copy">
+<table x="734" y="170" name="copy">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
-<row name="id_album" null="1" autoincrement="0">
-<datatype>INTEGER</datatype>
-<default>NULL</default><relation table="album" row="id" />
-</row>
-<row name="id_movie" null="1" autoincrement="0">
+<row name="movie_id" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="movie" row="id" />
+</row>
+<row name="album_id" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="album" row="id" />
 </row>
 <row name="active" null="0" autoincrement="0">
 <datatype>bit</datatype>
@@ -123,7 +119,7 @@
 <part>id</part>
 </key>
 </table>
-<table x="704" y="198" name="customer">
+<table x="1097" y="77" name="customer">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -134,7 +130,7 @@
 <datatype>VARCHAR(50)</datatype>
 <default>'NULL'</default></row>
 <row name="email" null="1" autoincrement="0">
-<datatype>VARCHAR(200)</datatype>
+<datatype>VARCHAR(254)</datatype>
 <default>NULL</default></row>
 <row name="dob" null="1" autoincrement="0">
 <datatype>DATE</datatype>
@@ -155,7 +151,7 @@
 <part>id</part>
 </key>
 </table>
-<table x="728" y="10" name="track">
+<table x="766" y="723" name="track">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -165,7 +161,11 @@
 <row name="duration" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
-<row name="name_genre" null="0" autoincrement="0">
+<row name="artist_id" null="0" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="person" row="id" />
+</row>
+<row name="genre_name" null="0" autoincrement="0">
 <datatype>VARCHAR</datatype>
 <default>'NULL'</default><relation table="genre" row="name" />
 </row>
@@ -173,12 +173,12 @@
 <part>id</part>
 </key>
 </table>
-<table x="834" y="10" name="album_tracks">
-<row name="id_album" null="1" autoincrement="0">
+<table x="1109" y="734" name="album_tracks">
+<row name="album_id" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="album" row="id" />
 </row>
-<row name="id_track" null="1" autoincrement="0">
+<row name="track_id" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="track" row="id" />
 </row>
@@ -186,11 +186,11 @@
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
 <key type="PRIMARY" name="">
-<part>id_album</part>
-<part>id_track</part>
+<part>album_id</part>
+<part>track_id</part>
 </key>
 </table>
-<table x="993" y="10" name="genre">
+<table x="118" y="650" name="genre">
 <row name="name" null="0" autoincrement="0">
 <datatype>VARCHAR</datatype>
 <default>'NULL'</default></row>
@@ -198,7 +198,7 @@
 <part>name</part>
 </key>
 </table>
-<table x="10" y="213" name="publisher">
+<table x="413" y="588" name="publisher">
 <row name="organisation" null="1" autoincrement="0">
 <datatype>VARCHAR(100)</datatype>
 <default>NULL</default></row>
@@ -206,26 +206,32 @@
 <part>organisation</part>
 </key>
 </table>
-<table x="140" y="213" name="loan">
+<table x="953" y="158" name="loan">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
-<row name="id_customer" null="1" autoincrement="0">
+<row name="customer_id" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="customer" row="id" />
 </row>
-<row name="id_copy" null="1" autoincrement="0">
+<row name="copy_id" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="copy" row="id" />
 </row>
 <row name="end_date" null="1" autoincrement="0">
 <datatype>DATE</datatype>
 <default>NULL</default></row>
+<row name="start_date" null="0" autoincrement="0">
+<datatype>DATE</datatype>
+<default>'NULL'</default></row>
+<row name="return_date" null="1" autoincrement="0">
+<datatype>DATE</datatype>
+<default>NULL</default></row>
 <key type="PRIMARY" name="">
 <part>id</part>
 </key>
 </table>
-<table x="244" y="213" name="artist">
+<table x="495" y="365" name="person">
 <row name="id" null="0" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -239,40 +245,40 @@
 <datatype>DATE</datatype>
 <default>'NULL'</default><comment>Date of Birth</comment>
 </row>
-<row name="type" null="1" autoincrement="0">
-<datatype>ENUM</datatype>
-<default>NULL</default></row>
 <key type="PRIMARY" name="">
 <part>id</part>
 </key>
 </table>
-<table x="351" y="213" name="movie_artist">
-<row name="id_movie" null="1" autoincrement="0">
+<table x="430" y="216" name="movie_artist">
+<row name="movie_id" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="movie" row="id" />
 </row>
-<row name="id_artist" null="0" autoincrement="0">
+<row name="artist_id" null="0" autoincrement="0">
 <datatype>INTEGER</datatype>
-<default>NULL</default><relation table="artist" row="id" />
+<default>NULL</default><relation table="person" row="id" />
 </row>
 <row name="role_name" null="0" autoincrement="0">
 <datatype>VARCHAR(150)</datatype>
 <default>'NULL'</default></row>
 <key type="PRIMARY" name="">
-<part>id_movie</part>
-<part>id_artist</part>
+<part>movie_id</part>
+<part>artist_id</part>
+<part>role_name</part>
 </key>
 </table>
-<table x="504" y="213" name="director">
+<table x="690" y="21" name="reservation_movie">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
-<row name="first_name" null="1" autoincrement="0">
-<datatype>VARCHAR(50)</datatype>
-<default>NULL</default></row>
-<row name="last_name" null="1" autoincrement="0">
-<datatype>VARCHAR(200)</datatype>
-<default>NULL</default></row>
+<row name="movie_id" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="movie" row="id" />
+</row>
+<row name="customer_id" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="customer" row="id" />
+</row>
 <key type="PRIMARY" name="">
 <part>id</part>
 </key>
