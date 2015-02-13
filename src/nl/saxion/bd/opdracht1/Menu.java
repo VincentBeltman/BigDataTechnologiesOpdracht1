@@ -16,12 +16,12 @@ public class Menu {
     /** Constructor of menu. When constructed, it will automatically print the main menu. */
     public Menu()
     {
-        printLine("Opstarten...");
+        print("Opstarten...");
         scan = new Scanner(System.in);
         dh = new DatabaseHandler();
         // Initialisation goes here.
         boolean quit = false;
-        printLine("Hallo!");
+        print("Hallo!");
         printStripes();
 
         while (!quit) {
@@ -52,7 +52,7 @@ public class Menu {
                 default:
             }
         }
-        printLine("Quiting program");
+        print("Quiting program");
     }
 
     /**
@@ -60,14 +60,14 @@ public class Menu {
      */
     public static void printStripes()
     {
-        printLine("-----------------------------------");
+        print("-----------------------------------");
     }
 
     /**
      * Cause System.out.println takes too much time to type. Only works on strings though.
      * @param print The string to be printed.
      */
-    public static void printLine(String print)
+    public static void print(String print)
     {
         System.out.println(print);
     }
@@ -86,7 +86,7 @@ public class Menu {
         choices[4] = "Reserveringen";
         choices[5] = "Uitleningen";
         choices[6] = "Zoeken";
-        return printChoices(choices);
+        return printChoices(choices, scan);
     }
 
     /**
@@ -94,15 +94,15 @@ public class Menu {
      */
     public void customers()
     {
-        printLine("KLANTEN");
+        print("KLANTEN");
         printStripes();
         String[] choices = new String[4];
         choices[0] = "Klant toevoegen";
         choices[1] = "Klant zoeken";
         choices[2] = "Klant gegevens wijzigen";
         choices[3] = "Terug";
-        int choise = printChoices(choices);
-        switch (choise){
+        int choice = printChoices(choices, scan);
+        switch (choice){
             case 0:
                 dh.addCustomer();
                 break;
@@ -122,7 +122,7 @@ public class Menu {
      */
     public void moviesAlbums()
     {
-        printLine("FILMS + ALBUMS");
+        print("FILMS + ALBUMS");
         printStripes();
         String[] choices = new String[5];
         choices[0] = "Film toevoegen";
@@ -130,8 +130,8 @@ public class Menu {
         choices[2] = "Exemplaar toevoegen";
         choices[3] = "Exemplaar wijzigen";
         choices[4] = "Terug";
-        int choise = printChoices(choices);
-        switch (choise){
+        int choice = printChoices(choices, scan);
+        switch (choice){
             case 0:
                 dh.addMovie();
                 break;
@@ -153,14 +153,14 @@ public class Menu {
      */
     public void actors()
     {
-        printLine("ARTIESTEN");
+        print("ARTIESTEN");
         printStripes();
         String[] choices = new String[3];
         choices[0] = "Artiest toevoegen";
         choices[1] = "Artiest wijzigen";
         choices[2] = "Terug";
-        int choise = printChoices(choices);
-        switch (choise){
+        int choice = printChoices(choices, scan);
+        switch (choice){
             case 0:
                 dh.addActor();
                 break;
@@ -177,13 +177,13 @@ public class Menu {
      */
     public void reservations()
     {
-        printLine("RESERVATIES");
+        print("RESERVATIES");
         printStripes();
         String[] choices = new String[2];
         choices[0] = "Reservering toevoegen";
         choices[1] = "Terug";
-        int choise = printChoices(choices);
-        switch (choise){
+        int choice = printChoices(choices, scan);
+        switch (choice){
             case 0:
                 dh.addReservation();
                 break;
@@ -197,15 +197,15 @@ public class Menu {
      */
     public void loans()
     {
-        printLine("LENINGEN");
+        print("LENINGEN");
         printStripes();
         String[] choices = new String[4];
         choices[0] = "Exemplaar uitlenen";
         choices[1] = "Exemplaar terugbrengen";
         choices[2] = "History bekijken";
         choices[3] = "Terug";
-        int choise = printChoices(choices);
-        switch (choise){
+        int choice = printChoices(choices, scan);
+        switch (choice){
             case 0:
                 dh.addLoan();
                 break;
@@ -225,7 +225,7 @@ public class Menu {
      */
     public void search()
     {
-        printLine("ZOEKEN");
+        print("ZOEKEN");
         printStripes();
         String[] choices = new String[6];
         choices[0] = "Zoeken op acteur";
@@ -234,8 +234,8 @@ public class Menu {
         choices[3] = "Zoeken op track";
         choices[4] = "Zoeken op album";
         choices[5] = "Terug";
-        int choise = printChoices(choices);
-        switch (choise){
+        int choice = printChoices(choices, scan);
+        switch (choice){
             case 0:
                 dh.searchActor();
                 break;
@@ -257,18 +257,18 @@ public class Menu {
     }
 
     /**
-     * Prints the given choises and waits for user input.
+     * Prints the given choices and waits for user input.
      * After the user input is given, it will check whether it is valid.
      * The user input is valid if its bigger than 0 and smaller than the length of the list.
      * If the user input is not valid it will ask the user to retry.
-     * @param choices The choises the user may choose from.
+     * @param choices The choices the user may choose from.
      * @return The valid user input
      */
-    public int printChoices(String[] choices)
+    public static int printChoices(String[] choices, Scanner scan)
     {
-        printLine("Kies één van de volgende commando's");
+        print("Kies één van de volgende commando's");
         for(int i = 0; i < choices.length; i++){
-            printLine(i + " " + choices[i]);
+            print(i + " " + choices[i]);
         }
         int result = -1;
         if (scan.hasNextInt()){
@@ -280,7 +280,7 @@ public class Menu {
         }
         scan = new Scanner(System.in);
         printStripes();
-        printLine("Voer een correct nummer in!");
-        return printChoices(choices);
+        print("Voer een correct nummer in!");
+        return printChoices(choices, scan);
     }
 }
