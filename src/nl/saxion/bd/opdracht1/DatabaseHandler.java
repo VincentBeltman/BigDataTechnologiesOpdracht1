@@ -1,14 +1,70 @@
 package nl.saxion.bd.opdracht1;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
 /**
  * Handler for the database.
  * The methods of this class will call the right procedure of the database.
  * Created by Vincent on 13-2-2015.
  */
 public class DatabaseHandler {
-    DatabaseHandler() {
+    private static DatabaseHandler instance;
+    protected DatabaseHandler() {
 
     }
+    private Connection c;
+
+    public static DatabaseHandler getInstance(){
+        if(instance ==null){
+            instance = new DatabaseHandler();
+        }
+        return instance;
+    }
+
+    public void connect()
+    {
+        System.out.print("Connecting");
+        c = null;
+        try
+        {
+            Class.forName("org.postgresql.Driver");
+            c = DriverManager.getConnection("jdbc:postgresql://localhost:5432/BD-opdracht1","bdopdracht1" , "1234");
+
+            System.out.println("Connection succesfully ");
+            c.setAutoCommit(false);
+
+        } catch (ClassNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+            System.out.println("Database conection fout");
+        }
+
+
+
+    }
+
+    public void disconnect()
+    {
+        try
+        {
+            c.close();
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+            System.out.println("Database conection closing error");
+        }
+
+
+    }
+
+
 
     /**
      * Adds a customer to the database
