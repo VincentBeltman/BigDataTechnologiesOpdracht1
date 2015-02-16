@@ -35,6 +35,7 @@ public class DatabaseHandler {
             System.out.println("Connection succesfully ");
             c.setAutoCommit(false);
 
+
         } catch (ClassNotFoundException e)
         {
             e.printStackTrace();
