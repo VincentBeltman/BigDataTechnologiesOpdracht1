@@ -3,6 +3,9 @@ package nl.saxion.bd.opdracht1;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 /**
  * Handler for the database.
@@ -10,10 +13,63 @@ import java.util.regex.Pattern;
  * Created by Vincent on 13-2-2015.
  */
 public class DatabaseHandler {
-    private Scanner scanner;
-    DatabaseHandler() {
-        scanner = new Scanner(System.in);
+    private static DatabaseHandler instance;
+    private static Scanner scanner;
+    protected DatabaseHandler() {
+
     }
+    private Connection c;
+
+    public static DatabaseHandler getInstance(){
+        if(instance ==null){
+            instance = new DatabaseHandler();
+            scanner = new Scanner(System.in);
+        }
+        return instance;
+    }
+
+    public void connect()
+    {
+        System.out.print("Connecting");
+        c = null;
+        try
+        {
+            Class.forName("org.postgresql.Driver");
+            c = DriverManager.getConnection("jdbc:postgresql://localhost:5432/BD-opdracht1","bdopdracht1" , "1234");
+
+            System.out.println("Connection succesfully ");
+            c.setAutoCommit(false);
+
+        } catch (ClassNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+            System.out.println("Database conection fout");
+        }
+
+
+
+    }
+
+    public void disconnect()
+    {
+        try
+        {
+            c.close();
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+            System.out.println("Database conection closing error");
+        }
+
+
+    }
+
+
 
     /**
      * Adds a customer to the database

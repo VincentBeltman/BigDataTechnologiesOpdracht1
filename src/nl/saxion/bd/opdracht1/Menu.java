@@ -18,8 +18,8 @@ public class Menu {
     {
         print("Opstarten...");
         scan = new Scanner(System.in);
-        dh = new DatabaseHandler();
-        // Initialisation goes here.
+        dh = DatabaseHandler.getInstance();
+        dh.connect();
         boolean quit = false;
         print("Hallo!");
         printStripes();
@@ -29,6 +29,7 @@ public class Menu {
             printStripes();
             switch (choice) {
                 case 0:
+                    dh.disconnect();
                     quit = true;
                     break;
                 case 1:
