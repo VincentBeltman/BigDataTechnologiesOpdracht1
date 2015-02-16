@@ -1,6 +1,5 @@
 package nl.saxion.bd.opdracht1;
 
-import java.util.Date;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
