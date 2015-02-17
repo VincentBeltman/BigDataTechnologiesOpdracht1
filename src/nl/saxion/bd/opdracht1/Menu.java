@@ -97,23 +97,19 @@ public class Menu {
     {
         print("KLANTEN");
         printStripes();
-        String[] choices = new String[4];
+        String[] choices = new String[3];
         choices[0] = "Klant toevoegen";
-        choices[1] = "Klant zoeken";
-        choices[2] = "Klant gegevens wijzigen";
-        choices[3] = "Terug";
+        choices[1] = "Klant gegevens wijzigen";
+        choices[2] = "Terug";
         int choice = printChoices(choices, scan);
         switch (choice){
             case 0:
                 dh.addCustomer();
                 break;
             case 1:
-                dh.searchCustomer();
-                break;
-            case 2:
                 dh.updateCustomer();
                 break;
-            case 3:
+            case 2:
                 return;
         }
     }
@@ -163,10 +159,10 @@ public class Menu {
         int choice = printChoices(choices, scan);
         switch (choice){
             case 0:
-                dh.addActor();
+                dh.addPerson();
                 break;
             case 1:
-                dh.updateActor();
+                dh.updatePerson();
                 break;
             case 2:
                 return;
@@ -228,13 +224,14 @@ public class Menu {
     {
         print("ZOEKEN");
         printStripes();
-        String[] choices = new String[6];
+        String[] choices = new String[7];
         choices[0] = "Zoeken op acteur";
         choices[1] = "Zoeken op artiest";
         choices[2] = "Zoeken op film";
         choices[3] = "Zoeken op track";
         choices[4] = "Zoeken op album";
-        choices[5] = "Terug";
+        choices[5] = "Zoeken op klant";
+        choices[6] = "Terug";
         int choice = printChoices(choices, scan);
         switch (choice){
             case 0:
@@ -253,6 +250,9 @@ public class Menu {
                 dh.searchAlbum();
                 break;
             case 5:
+                dh.searchCustomer();
+                break;
+            case 6:
                 return;
         }
     }

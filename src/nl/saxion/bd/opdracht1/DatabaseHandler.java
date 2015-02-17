@@ -1,11 +1,14 @@
 package nl.saxion.bd.opdracht1;
 
+import java.sql.*;
+import java.sql.Date;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 
 /**
  * Handler for the database.
@@ -78,23 +81,74 @@ public class DatabaseHandler {
     void addCustomer() {
         Menu.print("KLANT TOEVOEGEN");
         Menu.printStripes();
-        Menu.print("Voornaam:");
-        String firstName = scanner.next();
-        Menu.print("Achternaam:");
-        String lastName = scanner.next();
-        String email = addEmail();
-        Menu.print("Postcode:");
-        String zipcode = scanner.next();
-        // TODO: dob city address housenumber zipcode controleren?
+
+        // Start query
+        try{
+            String query = "{  call new_customer(?, ?, ?, ?, ?, ?, ?, ?)}";
+            CallableStatement proc = c.prepareCall(query);
+
+            // FirstName
+            Menu.print("Voornaam:");
+            String firstName = scanner.next();
+            proc.setString(1, firstName);
+
+            // LastName
+            Menu.print("Achternaam:");
+            String lastName = scanner.next();
+            proc.setString(2, lastName);
+
+            // Mail
+            String email = addEmail();
+            proc.setString(3, email);
+
+            // dob
+            Menu.print("Geboortedatum: (dd-mm-jjjj)");
+            Date dob = addDate();
+            proc.setDate(4, dob);
+
+            // city
+            Menu.print("Woonplaats:");
+            String city = scanner.next();
+            proc.setString(5, city);
+
+            // address
+            Menu.print("Straatnaam:");
+            String address = scanner.next();
+            proc.setString(6, address);
+
+            // zipcode
+            Menu.print("Postcode:");
+            String zipcode = scanner.next();
+            proc.setString(7, zipcode);
+
+            // housenumber
+            Menu.print("Huisnummer:");
+            String houseNumber = scanner.next();
+            proc.setString(8, houseNumber);
+
+            proc.execute();
+            proc.close();
+            c.commit();
+        } catch (Exception e){
+            Menu.print("Er is wat fout gegaan! Probeer het later nog eens.");
+        }
     }
 
     /**
      * Searches for a customer in the database
      */
     void searchCustomer() {
-        Menu.print("ZOEK KLANTEN");
+        Menu.print("ZOEK KLANT");
         Menu.printStripes();
-        // TODO: waarop?
+
+        // zipcode
+        Menu.print("Postcode:");
+        String zipcode = scanner.next();
+        //proc.setString(7, zipcode);
+
+        Menu.print("Huisnummer:");
+        String houseNumber = scanner.next();
+        //proc.setString(8, houseNumber);
     }
 
     /**
@@ -103,7 +157,7 @@ public class DatabaseHandler {
     void updateCustomer() {
         Menu.print("UPDATE KLANT");
         Menu.printStripes();
-        // TODO: wat en hoe?
+
     }
 
     /**
@@ -112,13 +166,36 @@ public class DatabaseHandler {
     void addAlbum() {
         Menu.print("ALBUM TOEVOEGEN");
         Menu.printStripes();
-        Menu.print("Naam van album:");
-        String name = scanner.next();
-        Menu.print("Datum van uitgave (jaar maand dag) [JJJJ-MM-DD]:");
-        String releaseDate = scanner.next();
-        Menu.print("Artiest:");
-        String artiest = scanner.next();
-        // TODO: Zoeken naar artiest en keuze menu laten zien?
+
+        try{
+            String query = "{  call new_person(?, ?, ?)}";
+            CallableStatement proc = c.prepareCall(query);
+
+            // Album naam
+            Menu.print("Naam van album:");
+            String name = scanner.next();
+            proc.setString(1, name);
+
+            // reslease date
+            Menu.print("Datum van uitgave: (dd-mm-jjjj)");
+            Date releaseDate = addDate();
+            proc.setDate(2, releaseDate);
+
+            // reslease date
+            Menu.print("Artiest:");
+            String artiest = scanner.next();
+            //TODO: search artists
+            proc.setDate(3, releaseDate);
+
+            proc.execute();
+            proc.close();
+            c.commit();
+        } catch (Exception e){
+            Menu.print("Er is wat fout gegaan! Probeer het later nog eens.");
+        }
+
+
+
         Menu.print("Uitegever:");
         String publisher = scanner.next();
         // TODO: Zoeken naar uitgever en keuze menu laten zien?
@@ -185,22 +262,42 @@ public class DatabaseHandler {
     /**
      * Adds an actor to the database
      */
-    void addActor() {
+    void addPerson() {
         Menu.print("ACTEUR/ARTIEST TOEVOEGEN");
         Menu.printStripes();
-        Menu.print("Voornaam:");
-        String firstName = scanner.next();
-        Menu.print("Achternaam:");
-        String lastName = scanner.next();
-        Menu.print("Geboorte datum:");
-        String dob = scanner.next();
-        // TODO: Add actor
+
+        // Start query
+        try{
+            String query = "{  call new_person(?, ?, ?)}";
+            CallableStatement proc = c.prepareCall(query);
+
+            // FirstName
+            Menu.print("Voornaam:");
+            String firstName = scanner.next();
+            proc.setString(1, firstName);
+
+            // LastName
+            Menu.print("Achternaam:");
+            String lastName = scanner.next();
+            proc.setString(2, lastName);
+
+            // dob
+            Menu.print("Geboortedatum: (dd-mm-jjjj)");
+            Date dob = addDate();
+            proc.setDate(3, dob);
+
+            proc.execute();
+            proc.close();
+            c.commit();
+        } catch (Exception e){
+            Menu.print("Er is wat fout gegaan! Probeer het later nog eens.");
+        }
     }
 
     /**
      * Updates an actor in the database
      */
-    void updateActor() {
+    void updatePerson() {
         Menu.print("ACTEUR AANPASSEN");
         Menu.printStripes();
         Menu.print("Naam van actuer/artiest:");
@@ -333,5 +430,19 @@ public class DatabaseHandler {
             }
         }
         return email;
+    }
+
+    private Date addDate() {
+        String temp = scanner.next();
+        Date dob = null;
+        DateFormat format = new SimpleDateFormat("dd-mm-yyyy");
+        try{
+            dob = new Date(format.parse(temp).getTime());
+        } catch (ParseException e){
+            Menu.print("De datum was niet in het goede format.");
+            Menu.print("Het format is: dd-mm-jjjj");
+            dob = addDate();
+        }
+        return dob;
     }
 }
