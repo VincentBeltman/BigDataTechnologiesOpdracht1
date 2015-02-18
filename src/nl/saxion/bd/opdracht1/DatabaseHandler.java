@@ -140,6 +140,7 @@ public class DatabaseHandler {
     void searchCustomer() {
         Menu.print("ZOEK KLANT");
         Menu.printStripes();
+        String query = "{  call search_customer(?, ?)}";
 
         // zipcode
         Menu.print("Postcode:");
@@ -148,6 +149,27 @@ public class DatabaseHandler {
 
         Menu.print("Huisnummer:");
         String houseNumber = scanner.next();
+        ResultSet rs = null;
+        try {
+            CallableStatement proc = c.prepareCall(query);
+            proc.setString(1, zipcode);
+            proc.setString(2, houseNumber);
+
+
+            rs = proc.executeQuery();
+            Menu.print("ID\t\t\tVoornaam\t\tAchternaam\t\tGeboortedatum\t\temail\t\tadres\t\thuis nummer\t\tpostcode\t\twoonplaats");
+            while (rs.next())
+            {
+                // do something6
+                Menu.print(rs.getString("id")+ "\t\t\t" +rs.getString("first_name") + "\t\t" + rs.getString("last_name") );
+
+            }
+            rs.close();
+            proc.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         //proc.setString(8, houseNumber);
     }
 
@@ -511,8 +533,8 @@ public class DatabaseHandler {
     }
 
     private boolean askYNQuestion(){
-        boolean good = false;
-        while (!good) {
+
+        while (true) {
             Menu.print("E-mail toevoegen? [J/N]");
             String choise = scanner.next();
             if (choise.equals("J")) {
