@@ -6,6 +6,7 @@ tracks updaten
 Exemplaar wijzigen
 ""	toevoegen
 zoeken - klantzoeken
+https://code.google.com/p/j-text-utils/wiki/UsingTextTable
 
 Mike:
 klanten zoeken
