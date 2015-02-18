@@ -192,14 +192,28 @@ public class DatabaseHandler {
             proc.execute();
             proc.close();
 
-
+            //
             Menu.print("Nummers");
             Menu.print("Zijn alle nummers van dezelfde artiest? [J/N]");
-            Menu.print("Naam van nummer:");
-            name = scanner.next();
-            Menu.print("Wilt u nog een nummer toevoege?:");
+            boolean different = askYNQuestion();
+            boolean add = true;
+            while (add) {
+                String[] choices = new String[2];
+                choices[0] = "Nummer toevoegen";
+                choices[1] = "Stoppen";
+                int choice = Menu.printChoices(choices, scanner);
+                switch (choice){
+                    case 0:
+
+                        break;
+                    case 1:
+                        add = false;
+                        break;
+                }
+            }
             c.commit();
         } catch (Exception e){
+            Menu.print(e.toString());
             Menu.print("Er is wat fout gegaan! Probeer het later nog eens.");
         }
     }
@@ -263,36 +277,41 @@ public class DatabaseHandler {
     /**
      * Adds an actor to the database
      */
-    void addPerson() {
+    int addPerson() {
         Menu.print("ACTEUR/ARTIEST TOEVOEGEN");
         Menu.printStripes();
+        int id = 0;
 
         // Start query
         try{
-            String query = "{  call new_person(?, ?, ?)}";
+            String query = "{ ? = call new_person(?, ?, ?)}";
             CallableStatement proc = c.prepareCall(query);
+            proc.registerOutParameter(1, Types.INTEGER);
 
             // FirstName
             Menu.print("Voornaam:");
             String firstName = scanner.next();
-            proc.setString(1, firstName);
+            proc.setString(2, firstName);
 
             // LastName
             Menu.print("Achternaam:");
             String lastName = scanner.next();
-            proc.setString(2, lastName);
+            proc.setString(3, lastName);
 
             // dob
             Menu.print("Geboortedatum: (dd-mm-jjjj)");
             Date dob = addDate();
-            proc.setDate(3, dob);
+            proc.setDate(4, dob);
 
             proc.execute();
+            Menu.print(proc.getInt(1) + "");
             proc.close();
             c.commit();
+            id = proc.getInt(1);
         } catch (Exception e){
             Menu.print("Er is wat fout gegaan! Probeer het later nog eens.");
         }
+        return id;
     }
 
     /**
@@ -405,6 +424,7 @@ public class DatabaseHandler {
 
     private String addEmail() {
         String email = "";
+        Menu.print("E-mail toevoegen? [J/N]");
         boolean add = askYNQuestion();
         while (add) {
             Menu.print("E-mail:");
@@ -459,8 +479,7 @@ public class DatabaseHandler {
         int id = 0;
         switch (choice){
             case -1:
-                addPerson();
-                // TODO: addperson must return id.
+                id = addPerson();
                 break;
             case 0:
                 id = searchPerson();
@@ -480,6 +499,7 @@ public class DatabaseHandler {
         st.setString(1, name);
         ResultSet rs = st.executeQuery();
         Menu.print("Optie\t\tUitgever");
+        Menu.print("-1\t\t\tNieuw");
         Menu.print("0\t\t\tOpnieuw");
         ArrayList<String> publishers = new ArrayList<String>();
         int count = 1;
@@ -489,7 +509,6 @@ public class DatabaseHandler {
             Menu.print(count + "\t\t\t" + rs.getString(1));
             count++;
         }
-        Menu.print(count + "\t\t\tNieuw");
         rs.close();
         st.close();
         Menu.print("Voer het optie nummer van uw keuze in:");
@@ -497,8 +516,7 @@ public class DatabaseHandler {
         String publish = "";
         switch (choice){
             case -1:
-                //addPublisher();
-                // TODO: addpiblisher must return id.
+                publish = addPublisher();
                 break;
             case 0:
                 publish = searchPublisher();
@@ -510,14 +528,25 @@ public class DatabaseHandler {
         return publish;
     }
 
+    private String addPublisher() throws SQLException{
+        String query = "{  call new_publisher(?)}";
+        CallableStatement proc = c.prepareCall(query);
+
+        Menu.print("Naam van uitgever:");
+        String name = scanner.next();
+        proc.setString(1, name);
+        proc.execute();
+        proc.close();
+        Menu.print("Toegevoegd!");
+        return name;
+    }
+
     private boolean askYNQuestion(){
-        boolean good = false;
-        while (!good) {
-            Menu.print("E-mail toevoegen? [J/N]");
-            String choise = scanner.next();
-            if (choise.equals("J")) {
+        while (true) {
+            String choice = scanner.next();
+            if (choice.equals("J")) {
                 return true;
-            } else if(choise.equals("N")){
+            } else if(choice.equals("N")){
                 return false;
             } else{
                 Menu.print("Vul J of N in.");
