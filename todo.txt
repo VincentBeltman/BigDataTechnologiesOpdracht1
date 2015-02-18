@@ -1,0 +1,15 @@
+Vincent:
+movies
+Album toevoegen
+Tracks toevoegen
+tracks updaten
+Exemplaar wijzigen
+""	toevoegen
+zoeken - klantzoeken
+
+Mike:
+klanten zoeken
+klanten wijzigen
+Artiest toevoegen
+Artiest actuer
+uitleningen /resev

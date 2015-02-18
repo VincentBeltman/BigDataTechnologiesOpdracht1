@@ -161,7 +161,9 @@ public class DatabaseHandler {
             while (rs.next())
             {
                 // do something6
-                Menu.print(rs.getString("id")+ "\t\t\t" +rs.getString("first_name") + "\t\t" + rs.getString("last_name") );
+                Menu.print(rs.getString("id") + "\t\t\t" + rs.getString("first_name") + "\t\t" + rs.getString("last_name") +"\t\t" + rs.getString("date_of_birth")+
+                       "\t\t"+ rs.getString("email") +"\t\t"+ rs.getString("address") +"\t\t" + rs.getString("housenumber") +"\t\t" +
+                        rs.getString("zipcode") +"\t\t" + rs.getString("city"));
 
             }
             rs.close();
