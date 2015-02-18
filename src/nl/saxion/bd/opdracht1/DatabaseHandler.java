@@ -5,7 +5,7 @@ import java.sql.Date;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Locale;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -168,7 +168,7 @@ public class DatabaseHandler {
         Menu.printStripes();
 
         try{
-            String query = "{  call new_person(?, ?, ?)}";
+            String query = "{  call new_album(?, ?, ?, ?)}";
             CallableStatement proc = c.prepareCall(query);
 
             // Album naam
@@ -181,25 +181,27 @@ public class DatabaseHandler {
             Date releaseDate = addDate();
             proc.setDate(2, releaseDate);
 
-            // reslease date
+            // Uitgever
+            Menu.print("Uitgever:");
+            proc.setString(3, searchPublisher());
+
+            // Artiest id
             Menu.print("Artiest:");
-            String artiest = scanner.next();
-            //TODO: search artists
-            proc.setDate(3, releaseDate);
+            proc.setInt(4, searchPerson());
 
             proc.execute();
             proc.close();
+
+
+            Menu.print("Nummers");
+            Menu.print("Zijn alle nummers van dezelfde artiest? [J/N]");
+            Menu.print("Naam van nummer:");
+            name = scanner.next();
+            Menu.print("Wilt u nog een nummer toevoege?:");
             c.commit();
         } catch (Exception e){
             Menu.print("Er is wat fout gegaan! Probeer het later nog eens.");
         }
-
-
-
-        Menu.print("Uitegever:");
-        String publisher = scanner.next();
-        // TODO: Zoeken naar uitgever en keuze menu laten zien?
-        // TODO: Tracks!
     }
 
     /**
@@ -233,7 +235,6 @@ public class DatabaseHandler {
                     break;
             }
         }
-        // TODO: Automatisch één copie toevoegen?
     }
 
     /**
@@ -403,21 +404,8 @@ public class DatabaseHandler {
     }
 
     private String addEmail() {
-        boolean good = false;
-        boolean add = false;
         String email = "";
-        while (!good) {
-            Menu.print("E-mail toevoegen? [Y/N]");
-            String choise = scanner.next();
-            if (choise.equals("Y")) {
-                add = true;
-                good = true;
-            } else if(choise.equals("N")){
-                good = true;
-            } else{
-                Menu.print("Vul Y of N in.");
-            }
-        }
+        boolean add = askYNQuestion();
         while (add) {
             Menu.print("E-mail:");
             email = scanner.next();
@@ -444,5 +432,96 @@ public class DatabaseHandler {
             dob = addDate();
         }
         return dob;
+    }
+
+    private int searchPerson() throws SQLException{
+        // Getting artist
+        Menu.print("Voornaam:");
+        String firstName = scanner.next();
+        Menu.print("Achternaam:");
+        String lastName = scanner.next();
+        PreparedStatement st = c.prepareStatement("SELECT * FROM person WHERE first_name LIKE ? AND last_name LIKE ?");
+        st.setString(1, firstName);
+        st.setString(2, lastName);
+
+        ResultSet rs = st.executeQuery();
+        Menu.print("ID\t\t\tVoornaam\t\tAchternaam\t\tGeboortedatum");
+        while (rs.next())
+        {
+            Menu.print(rs.getInt(1) + "\t\t\t" + rs.getString(2) + "\t\t\t" + rs.getString(3) + "\t\t\t" + rs.getDate(4));
+        }
+        Menu.print("Toets -1 om een nieuw persoon toe te voegen");
+        Menu.print("Toets 0 voor opnieuw");
+        rs.close();
+        st.close();
+        Menu.print("Voer het ID in:");
+        int choice = scanner.nextInt();
+        int id = 0;
+        switch (choice){
+            case -1:
+                addPerson();
+                // TODO: addperson must return id.
+                break;
+            case 0:
+                id = searchPerson();
+                break;
+            default:
+                id = choice;
+                break;
+        }
+        return id;
+    }
+
+    private String searchPublisher() throws SQLException{
+        Menu.print("Naam van uitgever:");
+        String name = scanner.next();
+
+        PreparedStatement st = c.prepareStatement("SELECT * FROM publisher WHERE organisation LIKE ?");
+        st.setString(1, name);
+        ResultSet rs = st.executeQuery();
+        Menu.print("Optie\t\tUitgever");
+        Menu.print("0\t\t\tOpnieuw");
+        ArrayList<String> publishers = new ArrayList<String>();
+        int count = 1;
+        while (rs.next())
+        {
+            publishers.add(rs.getString(1));
+            Menu.print(count + "\t\t\t" + rs.getString(1));
+            count++;
+        }
+        Menu.print(count + "\t\t\tNieuw");
+        rs.close();
+        st.close();
+        Menu.print("Voer het optie nummer van uw keuze in:");
+        int choice = scanner.nextInt();
+        String publish = "";
+        switch (choice){
+            case -1:
+                //addPublisher();
+                // TODO: addpiblisher must return id.
+                break;
+            case 0:
+                publish = searchPublisher();
+                break;
+            default:
+                publish = publishers.get(choice-1);
+                break;
+        }
+        return publish;
+    }
+
+    private boolean askYNQuestion(){
+        boolean good = false;
+        while (!good) {
+            Menu.print("E-mail toevoegen? [J/N]");
+            String choise = scanner.next();
+            if (choise.equals("J")) {
+                return true;
+            } else if(choise.equals("N")){
+                return false;
+            } else{
+                Menu.print("Vul J of N in.");
+            }
+        }
     }
 }
