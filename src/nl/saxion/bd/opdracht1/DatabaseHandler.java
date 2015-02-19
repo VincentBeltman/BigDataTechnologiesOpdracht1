@@ -192,8 +192,9 @@ public class DatabaseHandler {
             proc.execute();
             proc.close();
 
-            //
+            // Nummers
             Menu.print("Nummers");
+            Menu.print("Let op! De posities worden automatisch toegevoegd.");
             Menu.print("Zijn alle nummers van dezelfde artiest? [J/N]");
             boolean different = askYNQuestion();
             boolean add = true;
@@ -204,7 +205,10 @@ public class DatabaseHandler {
                 int choice = Menu.printChoices(choices, scanner);
                 switch (choice){
                     case 0:
-
+                        query = "{  call new_album(?, ?, ?, ?)}";
+                        proc = c.prepareCall(query);
+                        proc.execute();
+                        proc.close();
                         break;
                     case 1:
                         add = false;
