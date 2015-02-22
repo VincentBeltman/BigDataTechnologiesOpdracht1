@@ -1,5 +1,6 @@
 package nl.saxion.bd.opdracht1;
 
+import java.sql.SQLException;
 import java.util.Scanner;
 
 /**
@@ -14,7 +15,7 @@ public class Menu {
     private DatabaseHandler dh;
 
     /** Constructor of menu. When constructed, it will automatically print the main menu. */
-    public Menu()
+    public Menu() throws SQLException
     {
         print("Opstarten...");
         scan = new Scanner(System.in);
@@ -117,7 +118,7 @@ public class Menu {
     /**
      * Shows the sub-menu of albums.
      */
-    public void moviesAlbums()
+    public void moviesAlbums() throws SQLException
     {
         print("FILMS + ALBUMS");
         printStripes();
