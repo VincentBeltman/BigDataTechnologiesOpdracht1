@@ -1,15 +1,19 @@
 Vincent:
-movies
-Album toevoegen
-Tracks toevoegen
+movies toevoegen AF
+Album toevoegen AF
+Tracks toevoegen AF
 tracks updaten
-Exemplaar wijzigen
-""	toevoegen
-zoeken - klantzoeken
+Exemplaar kapot registreren AF
+""	toevoegen AF
+Zoeken op acteur
+Zoeken op artiest
+Zoeken op film
+Zoeken op track AF
+Zoeken op album AF
 https://code.google.com/p/j-text-utils/wiki/UsingTextTable
 
 Mike:
-klanten zoeken
+klanten zoeken AF
 klanten wijzigen
 Artiest toevoegen
 Artiest actuer
