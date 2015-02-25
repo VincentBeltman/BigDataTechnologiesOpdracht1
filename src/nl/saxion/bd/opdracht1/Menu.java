@@ -126,7 +126,7 @@ public class Menu {
         choices[0] = "Film toevoegen";
         choices[1] = "Album toevoegen";
         choices[2] = "Exemplaar toevoegen";
-        choices[3] = "Exemplaar wijzigen";
+        choices[3] = "Exemplaar als kapot registreren";
         choices[4] = "Terug";
         int choice = printChoices(choices, scan);
         switch (choice){
@@ -140,7 +140,7 @@ public class Menu {
                 dh.addCopy();
                 break;
             case 3:
-                dh.updateCopy();
+                dh.brokenCopy();
             case 4:
                 return;
         }
@@ -236,26 +236,29 @@ public class Menu {
         int choice = printChoices(choices, scan);
         switch (choice){
             case 0:
-                dh.searchActor();
+                dh.searchActor(true);
                 break;
             case 1:
-                dh.searchArtist();
+                dh.searchArtist(true);
                 break;
             case 2:
-                dh.searchMovie();
+                dh.searchMovie(true);
                 break;
             case 3:
-                dh.searchTrack();
+                dh.searchTrack(true);
                 break;
             case 4:
-                dh.searchAlbum();
+                dh.searchAlbum(true);
                 break;
             case 5:
-                dh.searchCustomer();
+                dh.searchCustomer(true);
                 break;
             case 6:
                 return;
         }
+        print("Druk op enter om verder te gaan.");
+        scan.nextLine();
+        scan.nextLine();
     }
 
     /**

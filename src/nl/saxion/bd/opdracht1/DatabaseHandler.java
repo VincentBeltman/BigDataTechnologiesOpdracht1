@@ -137,7 +137,7 @@ public class DatabaseHandler {
     /**
      * Searches for a customer in the database
      */
-    void searchCustomer() {
+    void searchCustomer(boolean realIds) {
         Menu.print("ZOEK KLANT");
         Menu.printStripes();
         String query = "{  call search_customer(?, ?)}";
@@ -193,20 +193,17 @@ public class DatabaseHandler {
 
         try{
             // This process needs to commit on every update.
-            c.setAutoCommit(true);
             String query = "{ ? = call new_album(?, ?, ?, ?)}";
             CallableStatement proc = c.prepareCall(query);
             proc.registerOutParameter(1, Types.INTEGER);
 
             // Album naam
             Menu.print("Naam van album:");
-            String name = scanner.next();
-            proc.setString(2, name);
+            proc.setString(2, scanner.next());
 
             // reslease date
             Menu.print("Datum van uitgave: (dd-mm-jjjj)");
-            Date releaseDate = addDate();
-            proc.setDate(3, releaseDate);
+            proc.setDate(3, addDate());
 
             // Uitgever
             Menu.print("Uitgever:");
@@ -241,12 +238,9 @@ public class DatabaseHandler {
                         break;
                 }
             }
-            addAlbumCopy(album);
         } catch (Exception e){
             Menu.print(e.toString());
             Menu.print("Er is wat fout gegaan! Probeer het later nog eens.");
-        } finally {
-            c.setAutoCommit(false);
         }
     }
 
@@ -256,31 +250,69 @@ public class DatabaseHandler {
     void addMovie() {
         Menu.print("FILM TOEVOEGEN");
         Menu.printStripes();
-        Menu.print("Naam van film:");
-        String name = scanner.next();
-        // TODO: datum van uitgave?
-        Menu.print("Genre:");
-        String genre = scanner.next();
-        // TODO: Zoeken naar genre en keuze menu laten zien?
-        Menu.print("Uitegever:");
-        String publisher = scanner.next();
-        // TODO: Zoeken naar uitgever en keuze menu laten zien?
-        Menu.print("Acteuren:");
-        boolean add = true;
-        while (add) {
-            String[] choices = new String[2];
-            choices[0] = "Acteur toevoegen";
-            choices[1] = "Stoppen";
-            int choice = Menu.printChoices(choices, scanner);
-            switch (choice){
-                case 0:
-                    // TODO: Zoeken naar acteur en keuze menu laten zien?
-                    break;
-                case 1:
-                    add = false;
-                    break;
+
+        try{
+            String query = "{ ? = call new_movie(?, ?, ?, ?, ?)}";
+            CallableStatement proc = c.prepareCall(query);
+            proc.registerOutParameter(1,Types.INTEGER);
+
+            // Album naam
+            Menu.print("Titel van film:");
+            proc.setString(2, scanner.nextLine());
+
+            // Album naam
+            Menu.print("Regiseur:");
+            proc.setInt(3, searchPerson());
+
+            // Uitgever
+            Menu.print("Uitgever:");
+            proc.setString(4, searchPublisher());
+
+            // Genre
+            Menu.print("Genre:");
+            proc.setString(5, addGenre());
+
+            // Director
+            Menu.print("Datum van uitgave: (dd-mm-jjjj)");
+            proc.setDate(6, addDate());
+
+            proc.execute();
+            int movie_id = proc.getInt(1);
+            proc.close();
+
+            // Actors
+            Menu.print("Acteuren:");
+            boolean add = true;
+            for (int i = 1; add; i++) {
+                String[] choices = new String[2];
+                choices[0] = "Acteur toevoegen";
+                choices[1] = "Stoppen";
+                int choice = Menu.printChoices(choices, scanner);
+                switch (choice){
+                    case 0:
+                        query = "{ call combine_movie_artist(?, ?, ?)}";
+                        proc = c.prepareCall(query);
+
+                        proc.setInt(1, movie_id);
+                        proc.setInt(2, searchPerson());
+                        Menu.print("Rol naam:");
+                        Menu.print(scanner.nextLine().length() + "");
+                        proc.setString(3, scanner.nextLine());
+
+                        proc.execute();
+                        proc.close();
+                        break;
+                    case 1:
+                        add = false;
+                        break;
+                }
             }
+            c.commit();
+        } catch (Exception e){
+            Menu.print(e.toString());
+            Menu.print("Er is wat fout gegaan! Probeer het later nog eens.");
         }
+
     }
 
     /**
@@ -296,15 +328,15 @@ public class DatabaseHandler {
                     // TODO: add film copy
                     break;
                 } else if (choice.equals("A")) {
-                    ArrayList<Integer> albums = searchAlbum();
+                    ArrayList<Integer> albums = searchAlbum(false);
                     Menu.print("Toets 0 voor opnieuw zoeken");
-                    int trackChoice = scanner.nextInt();
-                    switch (trackChoice){
+                    int albumChoice = scanner.nextInt();
+                    switch (albumChoice){
                         case 0:
                             addCopy();
                             break;
                         default:
-                            addAlbumCopy(albums.get(trackChoice - 1));
+                            addAlbumCopy(albums.get(albumChoice - 1));
                             break;
                     }
                     break;
@@ -322,13 +354,54 @@ public class DatabaseHandler {
     /**
      * Updates a copy in the database
      */
-    void updateCopy() {
-        Menu.print("EXEMPLAAR AANPASSEN");
+    void brokenCopy() {
+        Menu.print("KAPOT EXEMPLAAR");
         Menu.printStripes();
-        Menu.print("Naam van film/album:");
-        String name = scanner.next();
-        // TODO: zoeken naar film en keuze menu laten zien?
-        // TODO: Wat aanpassen?
+
+        try{
+            Menu.print("Is er een film of een album kapot gegaan? (F/A):");
+            while (true) {
+                String choice = scanner.next();
+                if (choice.equals("F")) {
+                    CallableStatement proc = c.prepareCall("{ call broken_movie_copy(?)}");
+                    ArrayList<Integer> movies = searchMovie(false);
+                    Menu.print("Toets 0 voor opnieuw zoeken");
+                    int movieChoice = scanner.nextInt();
+                    switch (movieChoice){
+                        case 0:
+                            brokenCopy();
+                            return;
+                        default:
+                            proc.setInt(1, movies.get(movieChoice - 1));
+                            proc.execute();
+                            break;
+                    }
+                    proc.close();
+                    break;
+                } else if (choice.equals("A")) {
+                    CallableStatement proc = c.prepareCall("{ call broken_album_copy(?)}");
+                    ArrayList<Integer> albums = searchAlbum(false);
+                    Menu.print("Toets 0 voor opnieuw zoeken");
+                    int albumChoice = scanner.nextInt();
+                    switch (albumChoice){
+                        case 0:
+                            brokenCopy();
+                            return;
+                        default:
+                            proc.setInt(1, albums.get(albumChoice - 1));
+                            proc.execute();
+                            break;
+                    }
+                    proc.close();
+                    break;
+                } else {
+                    Menu.print("Vul F(ilm) of A(lbum) in.");
+                }
+            }
+        } catch (Exception e){
+            Menu.print(e.toString());
+            Menu.print("Er is wat fout gegaan! Probeer het later nog eens.");
+        }
     }
 
     /**
@@ -365,6 +438,7 @@ public class DatabaseHandler {
             proc.close();
             c.commit();
         } catch (Exception e){
+            Menu.print(e.toString());
             Menu.print("Er is wat fout gegaan! Probeer het later nog eens.");
         }
         return id;
@@ -436,7 +510,7 @@ public class DatabaseHandler {
     /**
      * Searches an actor in the database
      */
-    void searchActor() {
+    void searchActor(boolean realIds) {
         Menu.print("ACTEUR ZOEKEN");
         Menu.printStripes();
         // TODO: Waarop zoeken?
@@ -445,13 +519,13 @@ public class DatabaseHandler {
     /**
      * Searches an artist in the database
      */
-    void searchArtist() {
+    void searchArtist(boolean realIds) {
         Menu.print("ARTIEST ZOEKEN");
         Menu.printStripes();
         // TODO: Waarop zoeken?
     }
 
-    ArrayList<Integer> searchTrack(){
+    ArrayList<Integer> searchTrack(boolean realIds){
         Menu.print("NUMMER ZOEKEN");
         Menu.printStripes();
         ArrayList<Integer> tracks = null;
@@ -462,7 +536,7 @@ public class DatabaseHandler {
             st.setString(1, scanner.next());
 
             ResultSet rs = st.executeQuery();
-            tracks = printTracks(rs);
+            tracks = printTracks(rs, realIds);
             rs.close();
             st.close();
         }  catch (Exception e){
@@ -475,16 +549,17 @@ public class DatabaseHandler {
     /**
      * Searches a movie in the database
      */
-    void searchMovie() {
+    ArrayList<Integer> searchMovie(boolean realIds) {
         Menu.print("FILM ZOEKEN");
         Menu.printStripes();
         // TODO: Waarop zoeken?
+        return new ArrayList<Integer>();
     }
 
     /**
      * Searches an album in the database
      */
-    ArrayList<Integer> searchAlbum() {
+    ArrayList<Integer> searchAlbum(boolean realIds) {
         Menu.print("ALBUM ZOEKEN");
         Menu.printStripes();
         ArrayList<Integer> albums = new ArrayList<Integer>();;
@@ -492,15 +567,31 @@ public class DatabaseHandler {
             String query = "{call search_album(?)}";
             CallableStatement st = c.prepareCall(query);
             Menu.print("Naam van album:");
-            st.setString(1, scanner.next());
+            st.setString(1, scanner.nextLine());
 
             ResultSet rs = st.executeQuery();
-            Menu.print("ID\t\t\tName\t\tUitgeef datum\tUitgever\t\tArtiest");
+            Menu.print("ID\t\t\tName\t\tUitgeef datum\t\tUitgever\t\tArtiest");
             int count = 1;
             while (rs.next())
             {
                 albums.add(rs.getInt(1));
-                Menu.print(count + "\t\t\t" + rs.getString(2) + "\t\t" + rs.getDate(3) + "\t\t\t" + rs.getString(4) + "\t\t" + rs.getString(5));
+                if (realIds) {
+                    Menu.print(rs.getInt(1) + "\t\t\t" + rs.getString(2) + "\t\t" + rs.getDate(3) + "\t\t\t" + rs.getString(4) + "\t\t" + rs.getString(5));
+                } else{
+                    Menu.print(count + "\t\t\t" + rs.getString(2) + "\t\t" + rs.getDate(3) + "\t\t\t" + rs.getString(4) + "\t\t" + rs.getString(5));
+                }
+                CallableStatement st2 = c.prepareCall("{call get_tracks_of_album(?)}");
+                st2.setInt(1, rs.getInt(1));
+                ResultSet rs2 = st2.executeQuery();
+                int counter = 0;
+                while (rs2.next())
+                {
+                    counter++;
+                    Menu.print("\t" + counter + "\t" + rs2.getString(1));
+                }
+                Menu.printStripes();
+                rs2.close();
+                st2.close();
                 count++;
             }
             rs.close();
@@ -658,20 +749,25 @@ public class DatabaseHandler {
         try {
             proc.execute();
         } catch(SQLException e){
+            Menu.print(e.toString());
             // If it is not succesfull, the publisher already exists.
         }
         proc.close();
         return name;
     }
 
-    private ArrayList<Integer> printTracks(ResultSet rs) throws SQLException{
-        Menu.print("ID\t\t\tTitel\t\tTijdsduur\tArtiestnaam\t\t\tGenre");
+    private ArrayList<Integer> printTracks(ResultSet rs, boolean realIds) throws SQLException{
+        Menu.print("ID\t\t\tTitel\t\tTijdsduur\tArtiestnaam\t\t\tGenre\t\tAlbum_name\t\t\tAlbum_id");
         ArrayList<Integer> tracks = new ArrayList<Integer>();
         int count = 1;
         while (rs.next())
         {
             tracks.add(rs.getInt(1));
-            Menu.print(count + "\t\t\t" + rs.getString(2) + "\t\t" + rs.getInt(3) + "\t\t\t" + rs.getString(4) + "\t\t" + rs.getString(5));
+            if (realIds){
+                Menu.print(rs.getInt(1) + "\t\t\t" + rs.getString(2) + "\t\t" + rs.getInt(3) + "\t\t\t" + rs.getString(4) + "\t\t" + rs.getString(5) + "\t\t" + rs.getString(6) + "\t\t" + rs.getInt(7));
+            } else{
+                Menu.print(count + "\t\t\t" + rs.getString(2) + "\t\t" + rs.getInt(3) + "\t\t\t" + rs.getString(4) + "\t\t" + rs.getString(5) + "\t\t" + rs.getString(6) + "\t\t" + rs.getInt(7));
+            }
             count++;
         }
         return tracks;
@@ -689,7 +785,7 @@ public class DatabaseHandler {
         }
 
         ResultSet rs = st.executeQuery();
-        ArrayList<Integer> tracks = printTracks(rs);
+        ArrayList<Integer> tracks = printTracks(rs, false);
         Menu.print("Toets -1 om een nieuwe track toe te voegen");
         Menu.print("Toets 0 voor opnieuw zoeken");
         rs.close();
