@@ -1,11 +1,14 @@
 package nl.saxion.bd.opdracht1;
 
+import java.io.Console;
 import java.sql.*;
 import java.sql.Date;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -137,7 +140,8 @@ public class DatabaseHandler {
     /**
      * Searches for a customer in the database
      */
-    void searchCustomer() {
+    List<Customer>  searchCustomer() {
+        List<Customer> customers = new ArrayList<Customer>();
         Menu.print("ZOEK KLANT");
         Menu.printStripes();
         String query = "{  call search_customer(?, ?)}";
@@ -160,18 +164,20 @@ public class DatabaseHandler {
             Menu.print("ID\t\t\tVoornaam\t\tAchternaam\t\tGeboortedatum\t\temail\t\tadres\t\thuis nummer\t\tpostcode\t\twoonplaats");
             while (rs.next())
             {
+                Customer c = new Customer(rs);
+                customers.add(c);
                 // do something6
-                Menu.print(rs.getString("id") + "\t\t\t" + rs.getString("first_name") + "\t\t" + rs.getString("last_name") +"\t\t" + rs.getString("date_of_birth")+
-                       "\t\t"+ rs.getString("email") +"\t\t"+ rs.getString("address") +"\t\t" + rs.getString("housenumber") +"\t\t" +
-                        rs.getString("zipcode") +"\t\t" + rs.getString("city"));
+                Menu.print(c.toString());
+
 
             }
+
             rs.close();
             proc.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
+        return customers;
         //proc.setString(8, houseNumber);
     }
 
@@ -181,6 +187,41 @@ public class DatabaseHandler {
     void updateCustomer() {
         Menu.print("UPDATE KLANT");
         Menu.printStripes();
+        boolean hasResult =  false;
+        List<Customer> customers = null;
+        while (!hasResult)
+        {
+            customers =  searchCustomer();
+            if(customers != null && customers.size() >0)
+            {
+                hasResult = true;
+            }
+        }
+        Menu.print("Voer ID in");
+        int customerId = scanner.nextInt();
+        Customer chosenCustomer =null;
+        for(Customer c : customers)
+        {
+            if(c.getId() == customerId)
+            {
+                chosenCustomer = c;
+                break;
+            }
+        }
+        if(chosenCustomer != null)
+        {
+            Menu.print("Voornaam: " + chosenCustomer.getFirstName());
+            scanner.nextLine();
+
+        }
+        else
+        {
+            Menu.print("FOUT verkeerd id meegegeven");
+        }
+
+
+
+
 
     }
 
