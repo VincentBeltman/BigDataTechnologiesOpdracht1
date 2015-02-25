@@ -6,6 +6,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -137,7 +138,11 @@ public class DatabaseHandler {
     /**
      * Searches for a customer in the database
      */
-    void searchCustomer(boolean realIds) {
+
+    List<Customer>  searchCustomer() {
+        List<Customer> customers = new ArrayList<Customer>();
+
+
         Menu.print("ZOEK KLANT");
         Menu.printStripes();
         String query = "{  call search_customer(?, ?)}";
@@ -160,18 +165,20 @@ public class DatabaseHandler {
             Menu.print("ID\t\t\tVoornaam\t\tAchternaam\t\tGeboortedatum\t\temail\t\tadres\t\thuis nummer\t\tpostcode\t\twoonplaats");
             while (rs.next())
             {
+                Customer c = new Customer(rs);
+                customers.add(c);
                 // do something6
-                Menu.print(rs.getString("id") + "\t\t\t" + rs.getString("first_name") + "\t\t" + rs.getString("last_name") +"\t\t" + rs.getString("date_of_birth")+
-                       "\t\t"+ rs.getString("email") +"\t\t"+ rs.getString("address") +"\t\t" + rs.getString("housenumber") +"\t\t" +
-                        rs.getString("zipcode") +"\t\t" + rs.getString("city"));
+                Menu.print(c.toString());
+
 
             }
+
             rs.close();
             proc.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
+        return customers;
         //proc.setString(8, houseNumber);
     }
 
@@ -181,6 +188,113 @@ public class DatabaseHandler {
     void updateCustomer() {
         Menu.print("UPDATE KLANT");
         Menu.printStripes();
+        boolean hasResult =  false;
+        List<Customer> customers = null;
+        while (!hasResult)
+        {
+            customers =  searchCustomer();
+            if(customers != null && customers.size() >0)
+            {
+                hasResult = true;
+            }
+        }
+        Menu.print("Voer ID in");
+        int customerId = scanner.nextInt();
+        Customer chosenCustomer =null;
+        for(Customer c : customers)
+        {
+            if(c.getId() == customerId)
+            {
+                chosenCustomer = c;
+                break;
+            }
+        }
+        if(chosenCustomer != null)
+        {   String query = "{  call update_customer(?, ? , ? , ? ,? ,? , ? ,?)}";
+            CallableStatement proc= null;
+            try {
+                proc = c.prepareCall(query);
+
+
+                Menu.print("Druk op Enter om de huidige waarde ongewijzigd te laten");
+                Menu.print("Voornaam: " + chosenCustomer.getFirstName());
+                //ignore first /n
+                scanner.nextLine();
+                String newFirstName = scanner.nextLine().trim();
+                if(newFirstName.isEmpty() == false)
+                {
+                    chosenCustomer.setFirstName(newFirstName);
+                }
+
+                proc.setString(1 ,chosenCustomer.getFirstName());
+
+                Menu.print("Achternaam: " + chosenCustomer.getLastName());
+                String newLastname = scanner.nextLine().trim();
+                if(newLastname.isEmpty() == false)
+                {
+                    chosenCustomer.setLastName(newLastname);
+                }
+                proc.setString(2 , chosenCustomer.getLastName());
+                Menu.print("Email: " +  chosenCustomer.getEmail());
+                String newEmail = scanner.nextLine().trim();
+                if(newEmail.isEmpty() == false) {
+                    chosenCustomer.setEmail(newEmail);
+                }
+                proc.setString(3, chosenCustomer.getEmail());
+
+                Menu.print("Adres: " + chosenCustomer.getAddress());
+                String newAddress = scanner.nextLine().trim();
+                if(newAddress.isEmpty() == false)
+                {
+                    chosenCustomer.setAddress(newAddress);
+                }
+                proc.setString(4 , chosenCustomer.getAddress());
+                Menu.print("Huisnummer + toevoeging: " + chosenCustomer.getHousenumber());
+                String newHousenumber = scanner.nextLine().trim();
+                if(newHousenumber.isEmpty() == false)
+                {
+                    chosenCustomer.setHousenumber(newHousenumber);
+                }
+                proc.setString(5, chosenCustomer.getHousenumber());
+
+                Menu.print("Postcode: " + chosenCustomer.getZipcode() );
+                String newZipcode = scanner.nextLine().trim();
+                if(newZipcode.isEmpty() ==false)
+                {
+                    chosenCustomer.setZipcode(newZipcode);
+                }
+                proc.setString(6 , chosenCustomer.getZipcode());
+
+                Menu.print("Stad: " + chosenCustomer.getCity() );
+                String newCity = scanner.nextLine().trim();
+                if(newCity.isEmpty() ==false)
+                {
+                    chosenCustomer.setCity(newCity);
+                }
+                proc.setString(7, chosenCustomer.getCity());
+
+                proc.setInt(8, chosenCustomer.getId());
+
+                Menu.print(proc.execute() + "");
+
+                c.commit();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+
+            //Menu.print(chosenCustomer.toString());
+
+
+        }
+        else
+        {
+            Menu.print("FOUT verkeerd id meegegeven");
+        }
+
+
+
+
 
     }
 

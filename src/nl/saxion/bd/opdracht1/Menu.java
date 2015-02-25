@@ -251,7 +251,7 @@ public class Menu {
                 dh.searchAlbum(true);
                 break;
             case 5:
-                dh.searchCustomer(true);
+                dh.searchCustomer();
                 break;
             case 6:
                 return;
