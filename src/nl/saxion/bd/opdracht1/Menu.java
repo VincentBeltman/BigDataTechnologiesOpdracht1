@@ -43,12 +43,9 @@ public class Menu {
                     actors();
                     break;
                 case 4:
-                    reservations();
-                    break;
-                case 5:
                     loans();
                     break;
-                case 6:
+                case 5:
                     search();
                     break;
                 default:
@@ -80,14 +77,13 @@ public class Menu {
      */
     public int showCommands()
     {
-        String[] choices = new String[7];
+        String[] choices = new String[6];
         choices[0] = "Quit";
         choices[1] = "Klanten";
         choices[2] = "Films + Albums";
         choices[3] = "Actueren";
-        choices[4] = "Reserveringen";
-        choices[5] = "Uitleningen";
-        choices[6] = "Zoeken";
+        choices[4] = "Uitleningen / Reserveringen";
+        choices[5] = "Zoeken";
         return printChoices(choices, scan);
     }
 
@@ -178,22 +174,6 @@ public class Menu {
     /**
      * Shows the sub-menu of reservations.
      */
-    public void reservations()
-    {
-        print("RESERVATIES");
-        printStripes();
-        String[] choices = new String[2];
-        choices[0] = "Reservering toevoegen";
-        choices[1] = "Terug";
-        int choice = printChoices(choices, scan);
-        switch (choice){
-            case 0:
-                dh.addReservation();
-                break;
-            case 2:
-                return;
-        }
-    }
 
     /**
      * Shows the sub-menu of loans.
@@ -203,7 +183,7 @@ public class Menu {
         print("LENINGEN");
         printStripes();
         String[] choices = new String[4];
-        choices[0] = "Exemplaar uitlenen";
+        choices[0] = "Exemplaar Uitlenen / Resevering";
         choices[1] = "Exemplaar terugbrengen";
         choices[2] = "History bekijken";
         choices[3] = "Terug";

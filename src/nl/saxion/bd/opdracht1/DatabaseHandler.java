@@ -1,5 +1,7 @@
 package nl.saxion.bd.opdracht1;
 
+import javafx.scene.input.Mnemonic;
+
 import java.sql.*;
 import java.sql.Date;
 import java.text.DateFormat;
@@ -182,13 +184,10 @@ public class DatabaseHandler {
         Menu.printStripes();
         boolean hasResult =  false;
         List<Customer> customers = null;
-        while (!hasResult)
+        customers = searchCustomerUntilResults();
+        if(customers == null)
         {
-            customers =  searchCustomer();
-            if(customers != null && customers.size() >0)
-            {
-                hasResult = true;
-            }
+            return;
         }
         Menu.print("Voer ID in");
         int customerId = scanner.nextInt();
@@ -560,33 +559,77 @@ public class DatabaseHandler {
     }
 
     /**
-     * Adds an reservation to the database
-     */
-    void addReservation() {
-        Menu.print("RESERVATIE TOEVOEGEN");
-        Menu.printStripes();
-        Menu.print("Film/album naam:");
-        String movieAlbum = scanner.next();
-        // TODO: zoeken naar film en keuze menu laten zien
-        Menu.print("Klant naam:");
-        String customer = scanner.next();
-        // TODO: zoeken naar klant en keuze menu laten zien
-        // TODO: Reservatie en loan samenvoegen?
-    }
-
-    /**
      * Adds a loan to the database
      */
     void addLoan() {
         Menu.print("UITLENEN");
         Menu.printStripes();
         Menu.print("Film/album naam:");
-        String movieAlbum = scanner.next();
-        // TODO: zoeken naar film en keuze menu laten zien
-        Menu.print("Klant naam:");
-        String customer = scanner.next();
-        // TODO: zoeken naar klant en keuze menu laten zien
-        // TODO: Reservatie en loan samenvoegen?
+        String movieAlbum = scanner.nextLine().trim();
+        Copy choseCopy = null ;
+        Customer choseCustomer = null;
+        try {
+            List<Copy> copies = findloanableMedia(movieAlbum);
+            if(copies != null && !copies.isEmpty())
+            {
+                Menu.print("ID \t\t type \t\t naam/titel \t\t uitgever \t\t uitgifte datum");
+                for(int i = 0; i < copies.size(); i ++)
+                {
+                    Menu.print(i + "\t\t" + copies.get(i).toString());
+                }
+                Menu.print("Voor het id in");
+                int choice =  scanner.nextInt();
+                Menu.print("KEUZE " + choice);
+                if(choice >0 && choice < copies.size())
+                {
+                    choseCopy = copies.get(choice);
+                }
+                else
+                {
+                    Menu.print("Ongeldige keuze");
+                    return;
+                }
+            }
+            else
+            {
+                return;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        List<Customer> customers = searchCustomerUntilResults();
+        if(customers != null &&  !customers.isEmpty() )
+        {
+            Menu.print("Voor het id in");
+            int choice =  scanner.nextInt();
+            for(Customer c : customers)
+            {
+                if(c.getId() == choice)
+                {
+                    choseCustomer  = c;
+                    break;
+                }
+            }
+            if(choseCustomer != null)
+            {
+                try {
+                    executeLoanResevationRequest(choseCustomer , choseCopy , true);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            else
+            {
+                return;
+            }
+
+
+        }
+        else
+        {
+            return;
+        }
+
     }
 
     /**
@@ -595,10 +638,71 @@ public class DatabaseHandler {
     void returnLoan() {
         Menu.print("UITLENING TERUG BRENGEN");
         Menu.printStripes();
-        Menu.print("Klant naam:");
-        String customer = scanner.next();
-        // TODO: zoeken naar klant en keuze menu laten zien.
+        List<Customer>  customers = searchCustomerUntilResults();
+        int id =  askCustomerId();
+        Customer chosenCustomer = null;
+        for(Customer c : customers)
+        {
+            if(c.getId() == id)
+            {
+                chosenCustomer = c;
+                break;
+            }
+        }
+        if(chosenCustomer !=  null)
+        {
+            try {
+
+                if(getLoanCustomer(chosenCustomer.getId()).size() >0)
+                {
+                    Menu.print("Voer de id in gescheiden door een ,");
+                    scanner.nextLine();
+                    ArrayList<Integer> loanIds = new ArrayList<Integer>();
+                    String invoer = scanner.nextLine();
+                    if(invoer.trim().isEmpty())
+                    {
+                        return;
+                    }
+                    String [] ar= invoer.split(",");
+                    for(String s : ar){
+                        loanIds.add(Integer.parseInt(s));
+                    }
+                    returnLoanItems(loanIds);
+                }
+                else
+                {
+                    Menu.print("Geen exemplaren");
+                }
+
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+
+        }
+
+
         // TODO: Bij kiezen klant lijst van reservaties zien.
+    }
+
+    private void returnLoanItems(ArrayList<Integer> loanIds) throws  SQLException{
+        if(loanIds != null)
+        {
+            for(int id : loanIds)
+            {
+                String query = "{  call return_loan(?)}";
+                CallableStatement proc = c.prepareCall(query);
+                proc.setInt(1 , id);
+                if(proc.execute())
+                {
+                    Menu.print("SUCCESVOL TERUG GEBRACHT" + id);
+                }
+            }
+
+            c.commit();
+        }
+
     }
 
     /**
@@ -950,4 +1054,101 @@ public class DatabaseHandler {
         proc.execute();
         proc.close();
     }
+
+    public List<Customer> searchCustomerUntilResults()
+    {
+        boolean hasResult = false;
+        List<Customer> customers = null;
+        while(!hasResult)
+        {
+            customers = searchCustomer();
+            if(customers != null && !customers.isEmpty())
+            {
+                return customers;
+            }
+            else
+            {
+                Menu.print("Geen resultaten gevonden wilt u het nog maals proberen J/N");
+                if(!askYNQuestion())
+                {
+                    break;
+                }
+            }
+        }
+        return  customers;
+    }
+    // Find movies and albums based on title
+    public List<Copy> findloanableMedia(String title) throws  SQLException
+    {
+        List<Copy> copyList = new ArrayList<Copy>();
+        String query = "{  call search_loanable(?)}";
+        CallableStatement proc = c.prepareCall(query);
+        Menu.print("title" + title);
+        proc.setString(1, title);
+        ResultSet rs = proc.executeQuery();
+        while (rs.next())
+        {
+            copyList.add(new Copy(rs));
+        }
+        copyList.toString();
+        return copyList;
+
+    }
+    public int askCustomerId()
+    {
+        Menu.print("Voer een klant id in");
+        return scanner.nextInt();
+    }
+    public List<Loan> getLoanCustomer(int customerId) throws SQLException
+    {
+        List<Loan> loanList = new ArrayList<Loan>();
+        String query = "{  call get_loan_customer(?)}";
+        CallableStatement proc = c.prepareCall(query);
+        proc.setInt(1,customerId);
+        ResultSet rs =  proc.executeQuery();
+        Menu.print("ID" + "\t\t" + "titel" + "\t\t" + "start datum" );
+        while (rs.next())
+        {
+            Loan l = new Loan(rs);
+            Menu.print(l.toString());
+            loanList.add(l);
+        }
+        return  loanList;
+
+    }
+
+    public void executeLoanResevationRequest(Customer cust , Copy copy ,boolean reserveIfNotAvailable ) throws  SQLException
+    {
+        String query = "{ call new_loan_reservation(?, ?,? ,?,?)}";
+        CallableStatement proc = c.prepareCall(query);
+//        proc.registerOutParameter(6 , Types.INTEGER);
+//        proc.registerOutParameter(7 , Types.INTEGER);
+        proc.setInt(1, cust.getId());
+        proc.setInt(2 ,  copy.getAlbumId());
+        proc.setInt(3 , copy.getMovieId());
+        proc.setInt(4 , 0);
+        proc.setBoolean(5, reserveIfNotAvailable);
+        //Menu.print(proc.toString());
+        ResultSet rs = proc.executeQuery();
+
+        c.commit();
+        while (rs.next())
+        {
+            int loan_id = rs.getInt("loan_id");
+            if(loan_id > 0)
+            {
+                Menu.print("Exemplaar uitgeleend");
+                return;
+            }
+            int res_id = rs.getInt("reserved_id");
+            if(res_id > 0)
+            {
+                Menu.print("Resevering gemaakt geen exemplaar meer beschikbaar voor uitlening");
+            }
+
+            Menu.print(rs.getInt("loan_id") + "");
+        }
+
+    }
+
 }
