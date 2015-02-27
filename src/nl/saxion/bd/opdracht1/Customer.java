@@ -29,9 +29,6 @@ public class Customer {
         this.zipcode = resultSet.getString("zipcode");
         this.housenumber =resultSet.getString("housenumber");
         this.dateOfBirth = resultSet.getDate("date_of_birth");
-
-
-
     }
 
     public int getId() {

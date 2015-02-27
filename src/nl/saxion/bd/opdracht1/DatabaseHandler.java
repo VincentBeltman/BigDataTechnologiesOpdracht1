@@ -141,8 +141,6 @@ public class DatabaseHandler {
 
     List<Customer>  searchCustomer() {
         List<Customer> customers = new ArrayList<Customer>();
-
-
         Menu.print("ZOEK KLANT");
         Menu.printStripes();
         String query = "{  call search_customer(?, ?)}";
@@ -150,18 +148,14 @@ public class DatabaseHandler {
         // zipcode
         Menu.print("Postcode:");
         String zipcode = scanner.next();
-        //proc.setString(7, zipcode);
 
         Menu.print("Huisnummer:");
         String houseNumber = scanner.next();
-        ResultSet rs = null;
         try {
             CallableStatement proc = c.prepareCall(query);
             proc.setString(1, zipcode);
             proc.setString(2, houseNumber);
-
-
-            rs = proc.executeQuery();
+            ResultSet rs = proc.executeQuery();
             Menu.print("ID\t\t\tVoornaam\t\tAchternaam\t\tGeboortedatum\t\temail\t\tadres\t\thuis nummer\t\tpostcode\t\twoonplaats");
             while (rs.next())
             {
@@ -179,7 +173,6 @@ public class DatabaseHandler {
             e.printStackTrace();
         }
         return customers;
-        //proc.setString(8, houseNumber);
     }
 
     /**
@@ -211,17 +204,14 @@ public class DatabaseHandler {
         }
         if(chosenCustomer != null)
         {   String query = "{  call update_customer(?, ? , ? , ? ,? ,? , ? ,?)}";
-            CallableStatement proc= null;
             try {
-                proc = c.prepareCall(query);
-
-
+                CallableStatement proc = c.prepareCall(query);
                 Menu.print("Druk op Enter om de huidige waarde ongewijzigd te laten");
                 Menu.print("Voornaam: " + chosenCustomer.getFirstName());
                 //ignore first /n
                 scanner.nextLine();
                 String newFirstName = scanner.nextLine().trim();
-                if(newFirstName.isEmpty() == false)
+                if(!newFirstName.isEmpty() )
                 {
                     chosenCustomer.setFirstName(newFirstName);
                 }
@@ -230,28 +220,28 @@ public class DatabaseHandler {
 
                 Menu.print("Achternaam: " + chosenCustomer.getLastName());
                 String newLastname = scanner.nextLine().trim();
-                if(newLastname.isEmpty() == false)
+                if(!newLastname.isEmpty())
                 {
                     chosenCustomer.setLastName(newLastname);
                 }
                 proc.setString(2 , chosenCustomer.getLastName());
                 Menu.print("Email: " +  chosenCustomer.getEmail());
                 String newEmail = scanner.nextLine().trim();
-                if(newEmail.isEmpty() == false) {
+                if(!newEmail.isEmpty()) {
                     chosenCustomer.setEmail(newEmail);
                 }
                 proc.setString(3, chosenCustomer.getEmail());
 
                 Menu.print("Adres: " + chosenCustomer.getAddress());
                 String newAddress = scanner.nextLine().trim();
-                if(newAddress.isEmpty() == false)
+                if(!newAddress.isEmpty())
                 {
                     chosenCustomer.setAddress(newAddress);
                 }
                 proc.setString(4 , chosenCustomer.getAddress());
                 Menu.print("Huisnummer + toevoeging: " + chosenCustomer.getHousenumber());
                 String newHousenumber = scanner.nextLine().trim();
-                if(newHousenumber.isEmpty() == false)
+                if(!newHousenumber.isEmpty())
                 {
                     chosenCustomer.setHousenumber(newHousenumber);
                 }
@@ -259,7 +249,7 @@ public class DatabaseHandler {
 
                 Menu.print("Postcode: " + chosenCustomer.getZipcode() );
                 String newZipcode = scanner.nextLine().trim();
-                if(newZipcode.isEmpty() ==false)
+                if(!newZipcode.isEmpty())
                 {
                     chosenCustomer.setZipcode(newZipcode);
                 }
@@ -267,7 +257,7 @@ public class DatabaseHandler {
 
                 Menu.print("Stad: " + chosenCustomer.getCity() );
                 String newCity = scanner.nextLine().trim();
-                if(newCity.isEmpty() ==false)
+                if(!newCity.isEmpty())
                 {
                     chosenCustomer.setCity(newCity);
                 }
@@ -275,27 +265,20 @@ public class DatabaseHandler {
 
                 proc.setInt(8, chosenCustomer.getId());
 
-                Menu.print(proc.execute() + "");
+                if(proc.execute())
+                {
+                    Menu.print("Klant Succesvol aangepast");
+                }
 
                 c.commit();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-
-
-            //Menu.print(chosenCustomer.toString());
-
-
         }
         else
         {
             Menu.print("FOUT verkeerd id meegegeven");
         }
-
-
-
-
-
     }
 
     /**
@@ -565,6 +548,7 @@ public class DatabaseHandler {
         Menu.print("ACTEUR AANPASSEN");
         Menu.printStripes();
         Menu.print("Naam van actuer/artiest:");
+
         String name = scanner.next();
         // TODO: zoeken naar film en keuze menu laten zien?
         // TODO: Wat aanpassen?
@@ -676,7 +660,7 @@ public class DatabaseHandler {
     ArrayList<Integer> searchAlbum(boolean realIds) {
         Menu.print("ALBUM ZOEKEN");
         Menu.printStripes();
-        ArrayList<Integer> albums = new ArrayList<Integer>();;
+        ArrayList<Integer> albums = new ArrayList<Integer>();
         try {
             String query = "{call search_album(?)}";
             CallableStatement st = c.prepareCall(query);
