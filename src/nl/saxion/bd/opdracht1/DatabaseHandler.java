@@ -73,9 +73,6 @@ public class DatabaseHandler {
 
 
     }
-
-
-
     /**
      * Adds a customer to the database
      */
@@ -90,12 +87,13 @@ public class DatabaseHandler {
 
             // FirstName
             Menu.print("Voornaam:");
-            String firstName = scanner.next();
+            //
+            String firstName = scanner.nextLine().trim();
             proc.setString(1, firstName);
 
             // LastName
             Menu.print("Achternaam:");
-            String lastName = scanner.next();
+            String lastName = scanner.nextLine().trim();
             proc.setString(2, lastName);
 
             // Mail
@@ -109,23 +107,24 @@ public class DatabaseHandler {
 
             // city
             Menu.print("Woonplaats:");
-            String city = scanner.next();
+            scanner.nextLine();
+            String city = scanner.nextLine().trim();
             proc.setString(5, city);
 
             // address
             Menu.print("Straatnaam:");
-            String address = scanner.next();
+            String address = scanner.nextLine().trim();
             proc.setString(6, address);
-
-            // zipcode
-            Menu.print("Postcode:");
-            String zipcode = scanner.next();
-            proc.setString(7, zipcode);
 
             // housenumber
             Menu.print("Huisnummer:");
-            String houseNumber = scanner.next();
+            String houseNumber = scanner.nextLine().trim();
             proc.setString(8, houseNumber);
+
+            // zipcode
+            Menu.print("Postcode:");
+            String zipcode = scanner.nextLine().trim();
+            proc.setString(7, zipcode);
 
             proc.execute();
             proc.close();
@@ -549,6 +548,12 @@ public class DatabaseHandler {
         Menu.printStripes();
         Menu.print("Naam van actuer/artiest:");
 
+        try {
+            searchPerson();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         String name = scanner.next();
         // TODO: zoeken naar film en keuze menu laten zien?
         // TODO: Wat aanpassen?
@@ -826,7 +831,7 @@ public class DatabaseHandler {
 
     private boolean askYNQuestion(){
         while (true) {
-            String choice = scanner.next();
+            String choice = scanner.next().toUpperCase();
             if (choice.equals("J")) {
                 return true;
             } else if(choice.equals("N")){

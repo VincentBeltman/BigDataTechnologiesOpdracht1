@@ -155,7 +155,9 @@ public class Menu {
         printStripes();
         String[] choices = new String[3];
         choices[0] = "Artiest toevoegen";
-        choices[1] = "Artiest wijzigen";
+        choices[1] = "Artiest gegevens wijzigen";
+        choices[2] = "Artiest aan Film koppelen";
+
         choices[2] = "Terug";
         int choice = printChoices(choices, scan);
         switch (choice){
@@ -166,6 +168,9 @@ public class Menu {
                 dh.updatePerson();
                 break;
             case 2:
+
+                break;
+            case 3:
                 return;
         }
     }
