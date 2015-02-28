@@ -681,7 +681,40 @@ public class DatabaseHandler {
     void getHistory() {
         Menu.print("GESCHIEDENIS");
         Menu.printStripes();
-        // TODO: Waarop zoeken?
+        Menu.print("Voer title in:");
+        String title = scanner.nextLine();
+
+        try {
+            List<Copy> copyList = searchCopy(title);
+            if(copyList.isEmpty())
+            {
+                Menu.print("Geen exemplaren gevonden ");
+                return;
+            }
+            Menu.print("ID \t\t type \t\t naam/titel \t\t uitgever \t\t uitgifte datum");
+            for (Copy c : copyList)
+            {
+                Menu.print(c.getCopyId() + "\t\t"  + c.toString());
+            }
+            Menu.print("Voer een ID in");
+            int copyId = scanner.nextInt();
+            getHistoryFromDB(copyId);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void getHistoryFromDB(int copyId) throws  SQLException{
+        String query = "{call loan_history(?)}";
+        CallableStatement proc = c.prepareCall(query);
+        proc.setInt(1 , copyId);
+        ResultSet rs = proc.executeQuery();
+        Menu.print("Klant \t\t uitleen datum \t\t terugbreng datum }");
+        while (rs.next())
+        {
+            Menu.print(rs.getString("customer_name") + "\t\t" + rs.getDate("start_date") + "\t\t" + rs.getDate("return_date") );
+        }
     }
 
     /**
@@ -1141,7 +1174,6 @@ public class DatabaseHandler {
         proc.setBoolean(5, reserveIfNotAvailable);
         //Menu.print(proc.toString());
         ResultSet rs = proc.executeQuery();
-
         c.commit();
         while (rs.next())
         {
@@ -1159,6 +1191,21 @@ public class DatabaseHandler {
 
             Menu.print(rs.getInt("loan_id") + "");
         }
+
+    }
+
+    public List<Copy> searchCopy(String title ) throws  SQLException
+    {
+        List<Copy> copyList = new ArrayList<Copy>();
+        String query = "{  call search_copy(?)}";
+        CallableStatement proc = c.prepareCall(query);
+        proc.setString(1, title);
+        ResultSet rs = proc.executeQuery();
+        while(rs.next())
+        {
+            copyList.add(new Copy(rs));
+        }
+        return  copyList;
 
     }
 

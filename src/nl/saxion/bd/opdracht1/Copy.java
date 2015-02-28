@@ -8,8 +8,8 @@ import java.sql.Date;
  * Created by Mike on 27-2-2015.
  */
 public class Copy {
-    private int albumId;
-    private int movieId;
+
+    private int albumId , movieId , copyid;
     private String title , publisher;
     private Date releaseDate;
 
@@ -20,9 +20,15 @@ public class Copy {
         title = rs.getString("title");
         publisher = rs.getString("publisher");
         releaseDate = rs.getDate("release_date");
+        copyid= rs.getInt("copy_id");
 
 
     }
+    public int getCopyId()
+    {
+        return copyid;
+    }
+
 
     public int getAlbumId()
     {
