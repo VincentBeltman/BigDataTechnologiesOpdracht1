@@ -2,20 +2,17 @@ Vincent:
 movies toevoegen AF
 Album toevoegen AF
 Tracks toevoegen AF
-tracks updaten
 Exemplaar kapot registreren AF
 ""	toevoegen AF
 Zoeken op acteur
 Zoeken op artiest
 Zoeken op film AF
-Zoeken op track
-Check copy exsists
-zoeken op persoon
 Zoeken op album AF
 https://code.google.com/p/j-text-utils/wiki/UsingTextTable
 
 Mike:
 klanten zoeken AF
-klanten wijzigen Af
+klanten wijzigen
+Artiest toevoegen
 Artiest actuer
-uitleningen /resev Aleen historie nog
+uitleningen /resev

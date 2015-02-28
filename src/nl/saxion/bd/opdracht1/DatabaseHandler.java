@@ -401,10 +401,20 @@ public class DatabaseHandler {
             while (true) {
                 String choice = scanner.next();
                 if (choice.equals("F")) {
-                    // TODO: add film copy
+                    searchMovie();
+                    Menu.print("Toets 0 voor opnieuw zoeken");
+                    int movieChoice = scanner.nextInt();
+                    switch (movieChoice){
+                        case 0:
+                            addCopy();
+                            break;
+                        default:
+                            addMovieCopy(movieChoice);
+                            break;
+                    }
                     break;
                 } else if (choice.equals("A")) {
-                    ArrayList<Integer> albums = searchAlbum();
+                    searchAlbum();
                     Menu.print("Toets 0 voor opnieuw zoeken");
                     int albumChoice = scanner.nextInt();
                     switch (albumChoice){
@@ -412,7 +422,7 @@ public class DatabaseHandler {
                             addCopy();
                             break;
                         default:
-                            addAlbumCopy(albums.get(albumChoice - 1));
+                            addAlbumCopy(albumChoice);
                             break;
                     }
                     break;
@@ -489,24 +499,21 @@ public class DatabaseHandler {
         int id = 0;
         // Start query
         try{
-            String query = "{ ? = call new_person(?, ?, ?)}";
+            String query = "{ ? = call new_person(?, ?)}";
             CallableStatement proc = c.prepareCall(query);
             proc.registerOutParameter(1, Types.INTEGER);
 
             // FirstName
-            Menu.print("Voornaam:");
-            String firstName = scanner.next();
-            proc.setString(2, firstName);
-
-            // LastName
-            Menu.print("Achternaam:");
-            String lastName = scanner.next();
-            proc.setString(3, lastName);
+            Menu.print("Naam:");
+            String name = scanner.nextLine();
+            if (name.length() == 0){
+                name = scanner.nextLine();
+            }
+            proc.setString(2, name);
 
             // dob
             Menu.print("Geboortedatum: (dd-mm-jjjj)");
-            Date dob = addDate();
-            proc.setDate(4, dob);
+            proc.setDate(3, addDate());
 
             proc.execute();
             id = proc.getInt(1);
@@ -549,7 +556,7 @@ public class DatabaseHandler {
         Copy choseCopy = null ;
         Customer choseCustomer = null;
         try {
-            List<Copy> copies = findloanableMedia(movieAlbum);
+            List<Copy> copies = findLoanableMedia(movieAlbum);
             if(copies != null && !copies.isEmpty())
             {
                 Menu.print("ID \t\t type \t\t naam/titel \t\t uitgever \t\t uitgifte datum");
@@ -598,7 +605,7 @@ public class DatabaseHandler {
 
                     Menu.print("Aantal dagen voer 0 in om de standaard waarde te gebruiken");
                     int numberOfDays = scanner.nextInt();
-                    executeLoanResevationRequest(choseCustomer, choseCopy, reseveNeeded, numberOfDays);
+                    executeLoanReservationRequest(choseCustomer, choseCopy, reseveNeeded, numberOfDays);
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
@@ -691,18 +698,26 @@ public class DatabaseHandler {
         Menu.print("ACTEUR ZOEKEN");
         Menu.printStripes();
         try {
-            String query = "{call search_actor(?, ?)}";
-            CallableStatement proc = c.prepareCall(query);
-            Menu.print("Voornaam:");
-            proc.setString(1, scanner.next());
-            Menu.print("Achternaam:");
-            proc.setString(2, scanner.next());
-
-            ResultSet rs = proc.executeQuery();
-
-
+            PreparedStatement st = c.prepareStatement("SELECT * FROM person WHERE name LIKE '%' || ? || '%'");
+            ResultSet rs = executeSearchPersonQuery(st);
+            Menu.print("ID\t\t\tName\t\t\tGeboortedatum");
+            while (rs.next())
+            {
+                Menu.print(rs.getInt(1) + "\t\t\t" + rs.getString(3) + "\t\t\t" + rs.getDate(2));
+                CallableStatement st2 = c.prepareCall("{call get_movies_of_actor(?)}");
+                st2.setInt(1, rs.getInt(1));
+                ResultSet rs2 = st2.executeQuery();
+                while (rs2.next())
+                {
+                    Menu.print("\t" + rs2.getInt(1) + "\t\t" + rs2.getString(2) + "\t\t" + rs2.getDate(3) + "\t\t" + rs2.getString(4) + "\t\t" + rs2.getString(5) + "\t\t" + rs2.getString(6));
+                }
+                Menu.printStripes();
+                rs2.close();
+                st2.close();
+            }
             rs.close();
-            proc.close();
+            st.close();
+            c.commit();
         }  catch (Exception e){
             Menu.print(e.toString());
             Menu.print("Er is wat fout gegaan! Probeer het later nog eens.");
@@ -749,11 +764,14 @@ public class DatabaseHandler {
             String query = "{call search_movie(?)}";
             CallableStatement st = c.prepareCall(query);
             Menu.print("Titel van film:");
-            st.setString(1, scanner.nextLine());
+            String title = scanner.nextLine();
+            if (title.length() == 0){
+                title = scanner.nextLine();
+            }
+            st.setString(1, title);
 
             ResultSet rs = st.executeQuery();
             Menu.print("ID\t\t\tTitel\t\t\t\tUitgeef datum\t\tRegisseur\t\t\tUitgever\t\tGenre");
-            int count = 1;
             while (rs.next())
             {
                 albums.add(rs.getInt(1));
@@ -768,7 +786,6 @@ public class DatabaseHandler {
                 Menu.printStripes();
                 rs2.close();
                 st2.close();
-                count++;
             }
             rs.close();
             st.close();
@@ -791,11 +808,14 @@ public class DatabaseHandler {
             String query = "{call search_album(?)}";
             CallableStatement st = c.prepareCall(query);
             Menu.print("Naam van album:");
-            st.setString(1, scanner.nextLine());
+            String name = scanner.nextLine();
+            if (name.length() == 0){
+                name = scanner.nextLine();
+            }
+            st.setString(1, name);
 
             ResultSet rs = st.executeQuery();
             Menu.print("ID\t\t\tName\t\tUitgeef datum\t\tUitgever\t\tArtiest");
-            int count = 1;
             while (rs.next())
             {
                 albums.add(rs.getInt(1));
@@ -814,7 +834,6 @@ public class DatabaseHandler {
                 Menu.printStripes();
                 rs2.close();
                 st2.close();
-                count++;
             }
             rs.close();
             st.close();
@@ -845,7 +864,7 @@ public class DatabaseHandler {
 
     private Date addDate() {
         String temp = scanner.next();
-        Date dob = null;
+        Date dob;
         DateFormat format = new SimpleDateFormat("dd-mm-yyyy");
         try{
             dob = new Date(format.parse(temp).getTime());
@@ -857,29 +876,34 @@ public class DatabaseHandler {
         return dob;
     }
 
+    private ResultSet executeSearchPersonQuery(PreparedStatement st) throws SQLException{
+        Menu.print("Naam:");
+
+        String name = scanner.nextLine();
+        if (name.length() == 0) {
+            name = scanner.nextLine();
+        }
+        st.setString(1, name);
+        ResultSet rs = st.executeQuery();
+        return rs;
+    }
+
     private int searchPerson() throws SQLException{
         // Getting artist
-        Menu.print("Voornaam:");
-        String firstName = scanner.next();
-        Menu.print("Achternaam:");
-        String lastName = scanner.next();
-        PreparedStatement st = c.prepareStatement("SELECT * FROM person WHERE first_name LIKE ? AND last_name LIKE ?");
-        st.setString(1, firstName);
-        st.setString(2, lastName);
-
-        ResultSet rs = st.executeQuery();
-        Menu.print("ID\t\t\tVoornaam\t\tAchternaam\t\tGeboortedatum");
+        PreparedStatement st = c.prepareStatement("SELECT * FROM person WHERE name LIKE '%' || ? || '%'");
+        ResultSet rs = executeSearchPersonQuery(st);
+        Menu.print("ID\t\t\tNaam\t\tGeboortedatum");
         while (rs.next())
         {
-            Menu.print(rs.getInt(1) + "\t\t\t" + rs.getString(2) + "\t\t\t" + rs.getString(3) + "\t\t\t" + rs.getDate(4));
+            Menu.print(rs.getInt(1) + "\t\t\t" + rs.getString(2) + "\t\t\t" + rs.getDate(3));
         }
-        Menu.print("Toets -1 om een nieuw persoon toe te voegen");
-        Menu.print("Toets 0 voor opnieuw");
         rs.close();
         st.close();
+        Menu.print("Toets -1 om een nieuw persoon toe te voegen");
+        Menu.print("Toets 0 voor opnieuw");
         Menu.print("Voer het ID in:");
         int choice = scanner.nextInt();
-        int id = 0;
+        int id;
         switch (choice){
             case -1:
                 id = addPerson();
@@ -1067,6 +1091,15 @@ public class DatabaseHandler {
         proc.execute();
         proc.close();
     }
+    private void addMovieCopy(int movie) throws SQLException{
+        String query = "{  call add_movie_copy(?)}";
+        CallableStatement proc = c.prepareCall(query);
+
+        proc.setInt(1, movie);
+
+        proc.execute();
+        proc.close();
+    }
 
     public List<Customer> searchCustomerUntilResults()
     {
@@ -1091,7 +1124,7 @@ public class DatabaseHandler {
         return  customers;
     }
     // Find movies and albums based on title
-    public List<Copy> findloanableMedia(String title) throws  SQLException
+    public List<Copy> findLoanableMedia(String title) throws  SQLException
     {
         List<Copy> copyList = new ArrayList<Copy>();
         String query = "{  call search_loanable(?)}";
@@ -1130,16 +1163,15 @@ public class DatabaseHandler {
 
     }
 
-    public void executeLoanResevationRequest(Customer cust , Copy copy ,boolean reserveIfNotAvailable , int numberOfDays ) throws  SQLException
+    public void executeLoanReservationRequest(Customer customer, Copy copy, boolean reserveIfNotAvailable, int numberOfDays) throws  SQLException
     {
         String query = "{ call new_loan_reservation(?, ?,? ,?,?)}";
         CallableStatement proc = c.prepareCall(query);
-        proc.setInt(1, cust.getId());
+        proc.setInt(1, customer.getId());
         proc.setInt(2 ,  copy.getAlbumId());
         proc.setInt(3 , copy.getMovieId());
         proc.setInt(4 , numberOfDays);
         proc.setBoolean(5, reserveIfNotAvailable);
-        //Menu.print(proc.toString());
         ResultSet rs = proc.executeQuery();
 
         c.commit();
@@ -1161,5 +1193,4 @@ public class DatabaseHandler {
         }
 
     }
-
 }
