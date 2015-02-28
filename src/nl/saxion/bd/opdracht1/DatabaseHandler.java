@@ -1,7 +1,5 @@
 package nl.saxion.bd.opdracht1;
 
-import javafx.scene.input.Mnemonic;
-
 import java.sql.*;
 import java.sql.Date;
 import java.text.DateFormat;
@@ -46,7 +44,6 @@ public class DatabaseHandler {
             System.out.println("Connection succesfully ");
             c.setAutoCommit(false);
 
-
         } catch (ClassNotFoundException e)
         {
             e.printStackTrace();
@@ -56,9 +53,6 @@ public class DatabaseHandler {
             e.printStackTrace();
             System.out.println("Database conection fout");
         }
-
-
-
     }
 
     public void disconnect()
@@ -72,8 +66,6 @@ public class DatabaseHandler {
             e.printStackTrace();
             System.out.println("Database conection closing error");
         }
-
-
     }
     /**
      * Adds a customer to the database
@@ -81,7 +73,6 @@ public class DatabaseHandler {
     void addCustomer() {
         Menu.print("KLANT TOEVOEGEN");
         Menu.printStripes();
-
         // Start query
         try{
             String query = "{  call new_customer(?, ?, ?, ?, ?, ?, ?, ?)}";
@@ -127,7 +118,6 @@ public class DatabaseHandler {
             Menu.print("Postcode:");
             String zipcode = scanner.nextLine().trim();
             proc.setString(7, zipcode);
-
             proc.execute();
             proc.close();
             c.commit();
@@ -135,11 +125,9 @@ public class DatabaseHandler {
             Menu.print("Er is wat fout gegaan! Probeer het later nog eens.");
         }
     }
-
     /**
      * Searches for a customer in the database
      */
-
     List<Customer>  searchCustomer() {
         List<Customer> customers = new ArrayList<Customer>();
         Menu.print("ZOEK KLANT");
@@ -164,10 +152,7 @@ public class DatabaseHandler {
                 customers.add(c);
                 // do something6
                 Menu.print(c.toString());
-
-
             }
-
             rs.close();
             proc.close();
         } catch (SQLException e) {
@@ -182,7 +167,6 @@ public class DatabaseHandler {
     void updateCustomer() {
         Menu.print("UPDATE KLANT");
         Menu.printStripes();
-        boolean hasResult =  false;
         List<Customer> customers = null;
         customers = searchCustomerUntilResults();
         if(customers == null)
@@ -262,12 +246,10 @@ public class DatabaseHandler {
                 proc.setString(7, chosenCustomer.getCity());
 
                 proc.setInt(8, chosenCustomer.getId());
-
                 if(proc.execute())
                 {
                     Menu.print("Klant Succesvol aangepast");
                 }
-
                 c.commit();
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -278,7 +260,6 @@ public class DatabaseHandler {
             Menu.print("FOUT verkeerd id meegegeven");
         }
     }
-
     /**
      * Adds an album to the database
      */
@@ -423,7 +404,7 @@ public class DatabaseHandler {
                     // TODO: add film copy
                     break;
                 } else if (choice.equals("A")) {
-                    ArrayList<Integer> albums = searchAlbum(false);
+                    ArrayList<Integer> albums = searchAlbum();
                     Menu.print("Toets 0 voor opnieuw zoeken");
                     int albumChoice = scanner.nextInt();
                     switch (albumChoice){
@@ -459,7 +440,7 @@ public class DatabaseHandler {
                 String choice = scanner.next();
                 if (choice.equals("F")) {
                     CallableStatement proc = c.prepareCall("{ call broken_movie_copy(?)}");
-                    ArrayList<Integer> movies = searchMovie(false);
+                    ArrayList<Integer> movies = searchMovie();
                     Menu.print("Toets 0 voor opnieuw zoeken");
                     int movieChoice = scanner.nextInt();
                     switch (movieChoice){
@@ -475,7 +456,7 @@ public class DatabaseHandler {
                     break;
                 } else if (choice.equals("A")) {
                     CallableStatement proc = c.prepareCall("{ call broken_album_copy(?)}");
-                    ArrayList<Integer> albums = searchAlbum(false);
+                    ArrayList<Integer> albums = searchAlbum();
                     Menu.print("Toets 0 voor opnieuw zoeken");
                     int albumChoice = scanner.nextInt();
                     switch (albumChoice){
@@ -506,7 +487,6 @@ public class DatabaseHandler {
         Menu.print("ACTEUR/ARTIEST TOEVOEGEN");
         Menu.printStripes();
         int id = 0;
-
         // Start query
         try{
             String query = "{ ? = call new_person(?, ?, ?)}";
@@ -580,7 +560,7 @@ public class DatabaseHandler {
                 Menu.print("Voor het id in");
                 int choice =  scanner.nextInt();
                 Menu.print("KEUZE " + choice);
-                if(choice >0 && choice < copies.size())
+                if(choice >=0 && choice < copies.size())
                 {
                     choseCopy = copies.get(choice);
                 }
@@ -613,21 +593,18 @@ public class DatabaseHandler {
             if(choseCustomer != null)
             {
                 try {
-                    executeLoanResevationRequest(choseCustomer , choseCopy , true);
+                    Menu.print("Reseveren indien niet beschikbaar J/N");
+                    boolean reseveNeeded = askYNQuestion();
+
+                    Menu.print("Aantal dagen voer 0 in om de standaard waarde te gebruiken");
+                    int numberOfDays = scanner.nextInt();
+                    executeLoanResevationRequest(choseCustomer, choseCopy, reseveNeeded, numberOfDays);
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
-            else
-            {
-                return;
-            }
 
 
-        }
-        else
-        {
-            return;
         }
 
     }
@@ -673,17 +650,10 @@ public class DatabaseHandler {
                 {
                     Menu.print("Geen exemplaren");
                 }
-
-
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-
-
         }
-
-
-        // TODO: Bij kiezen klant lijst van reservaties zien.
     }
 
     private void returnLoanItems(ArrayList<Integer> loanIds) throws  SQLException{
@@ -717,7 +687,7 @@ public class DatabaseHandler {
     /**
      * Searches an actor in the database
      */
-    void searchActor(boolean realIds) {
+    void searchActor() {
         Menu.print("ACTEUR ZOEKEN");
         Menu.printStripes();
         try {
@@ -742,12 +712,12 @@ public class DatabaseHandler {
     /**
      * Searches an artist in the database
      */
-    void searchArtist(boolean realIds) {
+    void searchArtist() {
         Menu.print("ARTIEST ZOEKEN");
         Menu.printStripes();
     }
 
-    ArrayList<Integer> searchTrack(boolean realIds){
+    ArrayList<Integer> searchTrack(){
         Menu.print("NUMMER ZOEKEN");
         Menu.printStripes();
         ArrayList<Integer> tracks = null;
@@ -758,7 +728,7 @@ public class DatabaseHandler {
             st.setString(1, scanner.next());
 
             ResultSet rs = st.executeQuery();
-            tracks = printTracks(rs, realIds);
+            tracks = printTracks(rs);
             rs.close();
             st.close();
         }  catch (Exception e){
@@ -771,7 +741,7 @@ public class DatabaseHandler {
     /**
      * Searches a movie in the database
      */
-    ArrayList<Integer> searchMovie(boolean realIds) {
+    ArrayList<Integer> searchMovie() {
         Menu.print("FILM ZOEKEN");
         Menu.printStripes();
         ArrayList<Integer> albums = new ArrayList<Integer>();
@@ -817,7 +787,7 @@ public class DatabaseHandler {
     /**
      * Searches an album in the database
      */
-    ArrayList<Integer> searchAlbum(boolean realIds) {
+    ArrayList<Integer> searchAlbum() {
         Menu.print("ALBUM ZOEKEN");
         Menu.printStripes();
         ArrayList<Integer> albums = new ArrayList<Integer>();
@@ -833,11 +803,9 @@ public class DatabaseHandler {
             while (rs.next())
             {
                 albums.add(rs.getInt(1));
-                if (realIds) {
-                    Menu.print(rs.getInt(1) + "\t\t\t" + rs.getString(2) + "\t\t" + rs.getDate(3) + "\t\t\t" + rs.getString(4) + "\t\t" + rs.getString(5));
-                } else{
-                    Menu.print(count + "\t\t\t" + rs.getString(2) + "\t\t" + rs.getDate(3) + "\t\t\t" + rs.getString(4) + "\t\t" + rs.getString(5));
-                }
+
+                Menu.print(rs.getInt(1) + "\t\t\t" + rs.getString(2) + "\t\t" + rs.getDate(3) + "\t\t\t" + rs.getString(4) + "\t\t" + rs.getString(5));
+
                 CallableStatement st2 = c.prepareCall("{call get_tracks_of_album(?)}");
                 st2.setInt(1, rs.getInt(1));
                 ResultSet rs2 = st2.executeQuery();
@@ -1014,18 +982,16 @@ public class DatabaseHandler {
         return name;
     }
 
-    private ArrayList<Integer> printTracks(ResultSet rs, boolean realIds) throws SQLException{
+    private ArrayList<Integer> printTracks(ResultSet rs) throws SQLException{
         Menu.print("ID\t\t\tTitel\t\tTijdsduur\tArtiestnaam\t\t\tGenre\t\tAlbum_name\t\t\tAlbum_id");
         ArrayList<Integer> tracks = new ArrayList<Integer>();
         int count = 1;
         while (rs.next())
         {
             tracks.add(rs.getInt(1));
-            if (realIds){
-                Menu.print(rs.getInt(1) + "\t\t\t" + rs.getString(2) + "\t\t" + rs.getInt(3) + "\t\t\t" + rs.getString(4) + "\t\t" + rs.getString(5) + "\t\t" + rs.getString(6) + "\t\t" + rs.getInt(7));
-            } else{
-                Menu.print(count + "\t\t\t" + rs.getString(2) + "\t\t" + rs.getInt(3) + "\t\t\t" + rs.getString(4) + "\t\t" + rs.getString(5) + "\t\t" + rs.getString(6) + "\t\t" + rs.getInt(7));
-            }
+
+            Menu.print(rs.getInt(1) + "\t\t\t" + rs.getString(2) + "\t\t" + rs.getInt(3) + "\t\t\t" + rs.getString(4) + "\t\t" + rs.getString(5) + "\t\t" + rs.getString(6) + "\t\t" + rs.getInt(7));
+
             count++;
         }
         return tracks;
@@ -1043,7 +1009,7 @@ public class DatabaseHandler {
         }
 
         ResultSet rs = st.executeQuery();
-        ArrayList<Integer> tracks = printTracks(rs, false);
+        ArrayList<Integer> tracks = printTracks(rs);
         Menu.print("Toets -1 om een nieuwe track toe te voegen");
         Menu.print("Toets 0 voor opnieuw zoeken");
         rs.close();
@@ -1168,16 +1134,14 @@ public class DatabaseHandler {
 
     }
 
-    public void executeLoanResevationRequest(Customer cust , Copy copy ,boolean reserveIfNotAvailable ) throws  SQLException
+    public void executeLoanResevationRequest(Customer cust , Copy copy ,boolean reserveIfNotAvailable , int numberOfDays ) throws  SQLException
     {
         String query = "{ call new_loan_reservation(?, ?,? ,?,?)}";
         CallableStatement proc = c.prepareCall(query);
-//        proc.registerOutParameter(6 , Types.INTEGER);
-//        proc.registerOutParameter(7 , Types.INTEGER);
         proc.setInt(1, cust.getId());
         proc.setInt(2 ,  copy.getAlbumId());
         proc.setInt(3 , copy.getMovieId());
-        proc.setInt(4 , 0);
+        proc.setInt(4 , numberOfDays);
         proc.setBoolean(5, reserveIfNotAvailable);
         //Menu.print(proc.toString());
         ResultSet rs = proc.executeQuery();
