@@ -698,17 +698,21 @@ public class DatabaseHandler {
             }
             Menu.print("Voer een ID in");
             int copyId = scanner.nextInt();
-            getHistoryFromDB(copyId);
+
+            Menu.print("Aantal dagen terug");
+            int numberOfDays = scanner.nextInt();
+            getHistoryFromDB(copyId, numberOfDays);
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    private void getHistoryFromDB(int copyId) throws  SQLException{
-        String query = "{call loan_history(?)}";
+    private void getHistoryFromDB(int copyId , int numberOfDays) throws  SQLException{
+        String query = "{call loan_history(?,?)}";
         CallableStatement proc = c.prepareCall(query);
         proc.setInt(1 , copyId);
+        proc.setInt(2, numberOfDays);
         ResultSet rs = proc.executeQuery();
         Menu.print("Klant \t\t uitleen datum \t\t terugbreng datum }");
         while (rs.next())
