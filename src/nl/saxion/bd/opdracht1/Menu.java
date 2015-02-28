@@ -221,19 +221,19 @@ public class Menu {
         int choice = printChoices(choices, scan);
         switch (choice){
             case 0:
-                dh.searchActor(true);
+                dh.searchActor();
                 break;
             case 1:
-                dh.searchArtist(true);
+                dh.searchArtist();
                 break;
             case 2:
-                dh.searchMovie(true);
+                dh.searchMovie();
                 break;
             case 3:
-                dh.searchTrack(true);
+                dh.searchTrack();
                 break;
             case 4:
-                dh.searchAlbum(true);
+                dh.searchAlbum();
                 break;
             case 5:
                 dh.searchCustomer();

@@ -14,7 +14,6 @@ https://code.google.com/p/j-text-utils/wiki/UsingTextTable
 
 Mike:
 klanten zoeken AF
-klanten wijzigen
-Artiest toevoegen
+klanten wijzigen Af
 Artiest actuer
-uitleningen /resev
+uitleningen /resev Aleen historie nog
