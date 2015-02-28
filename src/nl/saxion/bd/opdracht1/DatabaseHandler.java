@@ -757,11 +757,7 @@ public class DatabaseHandler {
             while (rs.next())
             {
                 albums.add(rs.getInt(1));
-                if (realIds) {
-                    Menu.print(rs.getInt(1) + "\t\t\t" + rs.getString(2) + "\t\t" + rs.getDate(3) + "\t\t\t" + rs.getString(4) + "\t\t" + rs.getString(5) + "\t\t" + rs.getString(6));
-                } else{
-                    Menu.print(count + "\t\t\t" + rs.getString(2) + "\t\t" + rs.getDate(3) + "\t\t\t" + rs.getString(4) + "\t\t" + rs.getString(5) + "\t\t" + rs.getString(6));
-                }
+                Menu.print(rs.getInt(1) + "\t\t\t" + rs.getString(2) + "\t\t" + rs.getDate(3) + "\t\t\t" + rs.getString(4) + "\t\t" + rs.getString(5) + "\t\t" + rs.getString(6));
                 CallableStatement st2 = c.prepareCall("{call get_artists_of_movie(?)}");
                 st2.setInt(1, rs.getInt(1));
                 ResultSet rs2 = st2.executeQuery();
