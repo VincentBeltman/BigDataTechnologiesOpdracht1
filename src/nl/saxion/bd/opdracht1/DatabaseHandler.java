@@ -688,7 +688,44 @@ public class DatabaseHandler {
     void getHistory() {
         Menu.print("GESCHIEDENIS");
         Menu.printStripes();
-        // TODO: Waarop zoeken?
+        Menu.print("Voer title in:");
+        String title = scanner.nextLine();
+
+        try {
+            List<Copy> copyList = searchCopy(title);
+            if(copyList.isEmpty())
+            {
+                Menu.print("Geen exemplaren gevonden ");
+                return;
+            }
+            Menu.print("ID \t\t type \t\t naam/titel \t\t uitgever \t\t uitgifte datum");
+            for (Copy c : copyList)
+            {
+                Menu.print(c.getCopyId() + "\t\t"  + c.toString());
+            }
+            Menu.print("Voer een ID in");
+            int copyId = scanner.nextInt();
+
+            Menu.print("Aantal dagen terug");
+            int numberOfDays = scanner.nextInt();
+            getHistoryFromDB(copyId, numberOfDays);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void getHistoryFromDB(int copyId , int numberOfDays) throws  SQLException{
+        String query = "{call loan_history(?,?)}";
+        CallableStatement proc = c.prepareCall(query);
+        proc.setInt(1 , copyId);
+        proc.setInt(2, numberOfDays);
+        ResultSet rs = proc.executeQuery();
+        Menu.print("Klant \t\t uitleen datum \t\t terugbreng datum }");
+        while (rs.next())
+        {
+            Menu.print(rs.getString("customer_name") + "\t\t" + rs.getDate("start_date") + "\t\t" + rs.getDate("return_date") );
+        }
     }
 
     /**
@@ -730,6 +767,31 @@ public class DatabaseHandler {
     void searchArtist() {
         Menu.print("ARTIEST ZOEKEN");
         Menu.printStripes();
+        try {
+            PreparedStatement st = c.prepareStatement("SELECT * FROM person WHERE name LIKE '%' || ? || '%'");
+            ResultSet rs = executeSearchPersonQuery(st);
+            Menu.print("ID\t\t\tName\t\t\tGeboortedatum");
+            while (rs.next())
+            {
+                Menu.print(rs.getInt(1) + "\t\t\t" + rs.getString(3) + "\t\t\t" + rs.getDate(2));
+                CallableStatement st2 = c.prepareCall("{call get_albums_of_actor(?)}");
+                st2.setInt(1, rs.getInt(1));
+                ResultSet rs2 = st2.executeQuery();
+                while (rs2.next())
+                {
+                    Menu.print("\t" + rs2.getInt(1) + "\t\t" + rs2.getString(2) + "\t\t" + rs2.getDate(3) + "\t\t" + rs2.getString(4));
+                }
+                Menu.printStripes();
+                rs2.close();
+                st2.close();
+            }
+            rs.close();
+            st.close();
+            c.commit();
+        }  catch (Exception e){
+            Menu.print(e.toString());
+            Menu.print("Er is wat fout gegaan! Probeer het later nog eens.");
+        }
     }
 
     ArrayList<Integer> searchTrack(){
@@ -837,6 +899,7 @@ public class DatabaseHandler {
             }
             rs.close();
             st.close();
+            c.commit();
         }  catch (Exception e){
             Menu.print(e.toString());
             Menu.print("Er is wat fout gegaan! Probeer het later nog eens.");
@@ -1152,7 +1215,7 @@ public class DatabaseHandler {
         CallableStatement proc = c.prepareCall(query);
         proc.setInt(1,customerId);
         ResultSet rs =  proc.executeQuery();
-        Menu.print("ID" + "\t\t" + "titel" + "\t\t" + "start datum" );
+        Menu.print("ID" + "\t\t" + "titel" + "\t\t" + "start datum");
         while (rs.next())
         {
             Loan l = new Loan(rs);
@@ -1173,7 +1236,6 @@ public class DatabaseHandler {
         proc.setInt(4 , numberOfDays);
         proc.setBoolean(5, reserveIfNotAvailable);
         ResultSet rs = proc.executeQuery();
-
         c.commit();
         while (rs.next())
         {
@@ -1191,6 +1253,21 @@ public class DatabaseHandler {
 
             Menu.print(rs.getInt("loan_id") + "");
         }
+
+    }
+
+    public List<Copy> searchCopy(String title ) throws  SQLException
+    {
+        List<Copy> copyList = new ArrayList<Copy>();
+        String query = "{  call search_copy(?)}";
+        CallableStatement proc = c.prepareCall(query);
+        proc.setString(1, title);
+        ResultSet rs = proc.executeQuery();
+        while(rs.next())
+        {
+            copyList.add(new Copy(rs));
+        }
+        return  copyList;
 
     }
 }
