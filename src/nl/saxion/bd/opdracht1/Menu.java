@@ -81,7 +81,7 @@ public class Menu {
         choices[0] = "Quit";
         choices[1] = "Klanten";
         choices[2] = "Films + Albums";
-        choices[3] = "Actueren";
+        choices[3] = "Acteuren";
         choices[4] = "Uitleningen / Reserveringen";
         choices[5] = "Zoeken";
         return printChoices(choices, scan);
