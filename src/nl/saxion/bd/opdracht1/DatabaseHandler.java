@@ -560,7 +560,7 @@ public class DatabaseHandler {
                 Menu.print("Voor het id in");
                 int choice =  scanner.nextInt();
                 Menu.print("KEUZE " + choice);
-                if(choice >0 && choice < copies.size())
+                if(choice >=0 && choice < copies.size())
                 {
                     choseCopy = copies.get(choice);
                 }
