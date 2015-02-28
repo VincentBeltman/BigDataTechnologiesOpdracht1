@@ -7,9 +7,12 @@ Exemplaar kapot registreren AF
 ""	toevoegen AF
 Zoeken op acteur
 Zoeken op artiest
-Zoeken op film
-Zoeken op track AF
+Zoeken op film AF
+Zoeken op track
+Check copy exsists
+zoeken op persoon
 Zoeken op album AF
+Racoon
 https://code.google.com/p/j-text-utils/wiki/UsingTextTable
 
 Mike:

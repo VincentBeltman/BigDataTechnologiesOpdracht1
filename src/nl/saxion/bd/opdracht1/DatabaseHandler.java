@@ -720,7 +720,23 @@ public class DatabaseHandler {
     void searchActor(boolean realIds) {
         Menu.print("ACTEUR ZOEKEN");
         Menu.printStripes();
-        // TODO: Waarop zoeken?
+        try {
+            String query = "{call search_actor(?, ?)}";
+            CallableStatement proc = c.prepareCall(query);
+            Menu.print("Voornaam:");
+            proc.setString(1, scanner.next());
+            Menu.print("Achternaam:");
+            proc.setString(2, scanner.next());
+
+            ResultSet rs = proc.executeQuery();
+
+
+            rs.close();
+            proc.close();
+        }  catch (Exception e){
+            Menu.print(e.toString());
+            Menu.print("Er is wat fout gegaan! Probeer het later nog eens.");
+        }
     }
 
     /**
@@ -729,7 +745,6 @@ public class DatabaseHandler {
     void searchArtist(boolean realIds) {
         Menu.print("ARTIEST ZOEKEN");
         Menu.printStripes();
-        // TODO: Waarop zoeken?
     }
 
     ArrayList<Integer> searchTrack(boolean realIds){
@@ -759,8 +774,44 @@ public class DatabaseHandler {
     ArrayList<Integer> searchMovie(boolean realIds) {
         Menu.print("FILM ZOEKEN");
         Menu.printStripes();
-        // TODO: Waarop zoeken?
-        return new ArrayList<Integer>();
+        ArrayList<Integer> albums = new ArrayList<Integer>();
+        try{
+            String query = "{call search_movie(?)}";
+            CallableStatement st = c.prepareCall(query);
+            Menu.print("Titel van film:");
+            st.setString(1, scanner.nextLine());
+
+            ResultSet rs = st.executeQuery();
+            Menu.print("ID\t\t\tTitel\t\t\t\tUitgeef datum\t\tRegisseur\t\t\tUitgever\t\tGenre");
+            int count = 1;
+            while (rs.next())
+            {
+                albums.add(rs.getInt(1));
+                if (realIds) {
+                    Menu.print(rs.getInt(1) + "\t\t\t" + rs.getString(2) + "\t\t" + rs.getDate(3) + "\t\t\t" + rs.getString(4) + "\t\t" + rs.getString(5) + "\t\t" + rs.getString(6));
+                } else{
+                    Menu.print(count + "\t\t\t" + rs.getString(2) + "\t\t" + rs.getDate(3) + "\t\t\t" + rs.getString(4) + "\t\t" + rs.getString(5) + "\t\t" + rs.getString(6));
+                }
+                CallableStatement st2 = c.prepareCall("{call get_artists_of_movie(?)}");
+                st2.setInt(1, rs.getInt(1));
+                ResultSet rs2 = st2.executeQuery();
+                while (rs2.next())
+                {
+                    Menu.print("\t" + rs2.getString(1) + "\t\t" + rs2.getString(2) + "\t\t" + rs2.getDate(3));
+                }
+                Menu.printStripes();
+                rs2.close();
+                st2.close();
+                count++;
+            }
+            rs.close();
+            st.close();
+            c.commit();
+        } catch(Exception e){
+            Menu.print(e.toString());
+            Menu.print("Er is wat fout gegaan! Probeer het later nog eens.");
+        }
+        return albums;
     }
 
     /**
