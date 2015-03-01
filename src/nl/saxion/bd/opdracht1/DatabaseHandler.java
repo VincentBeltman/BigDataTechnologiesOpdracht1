@@ -153,6 +153,7 @@ public class DatabaseHandler {
                 // do something6
                 Menu.print(c.toString());
             }
+            c.commit();
             rs.close();
             proc.close();
         } catch (SQLException e) {
@@ -314,6 +315,7 @@ public class DatabaseHandler {
                         break;
                 }
             }
+            c.commit();
         } catch (Exception e){
             Menu.print(e.toString());
             Menu.print("Er is wat fout gegaan! Probeer het later nog eens.");
@@ -372,8 +374,11 @@ public class DatabaseHandler {
                         proc.setInt(1, movie_id);
                         proc.setInt(2, searchPerson());
                         Menu.print("Rol naam:");
-                        Menu.print(scanner.nextLine().length() + "");
-                        proc.setString(3, scanner.nextLine());
+                        String name = scanner.nextLine();
+                        if (name.length() == 0){
+                            name = scanner.nextLine();
+                        }
+                        proc.setString(3, name);
 
                         proc.execute();
                         proc.close();
@@ -450,7 +455,7 @@ public class DatabaseHandler {
                 String choice = scanner.next();
                 if (choice.equals("F")) {
                     CallableStatement proc = c.prepareCall("{ call broken_movie_copy(?)}");
-                    ArrayList<Integer> movies = searchMovie();
+                    searchMovie();
                     Menu.print("Toets 0 voor opnieuw zoeken");
                     int movieChoice = scanner.nextInt();
                     switch (movieChoice){
@@ -458,7 +463,7 @@ public class DatabaseHandler {
                             brokenCopy();
                             return;
                         default:
-                            proc.setInt(1, movies.get(movieChoice - 1));
+                            proc.setInt(1, movieChoice);
                             proc.execute();
                             break;
                     }
@@ -484,6 +489,7 @@ public class DatabaseHandler {
                     Menu.print("Vul F(ilm) of A(lbum) in.");
                 }
             }
+            c.commit();
         } catch (Exception e){
             Menu.print(e.toString());
             Menu.print("Er is wat fout gegaan! Probeer het later nog eens.");
@@ -532,17 +538,37 @@ public class DatabaseHandler {
     void updatePerson() {
         Menu.print("ACTEUR AANPASSEN");
         Menu.printStripes();
-        Menu.print("Naam van actuer/artiest:");
 
         try {
-            searchPerson();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+            CallableStatement proc = c.prepareCall("{ call update_person(?,?)}");
 
-        String name = scanner.next();
-        // TODO: zoeken naar film en keuze menu laten zien?
-        // TODO: Wat aanpassen?
+            PreparedStatement st = c.prepareStatement("SELECT * FROM person WHERE name LIKE '%' || ? || '%'");
+            ResultSet rs = executeSearchPersonQuery(st);
+            Menu.print("ID\t\t\tNaam\t\tGeboortedatum");
+            while (rs.next())
+            {
+                Menu.print(rs.getInt(1) + "\t\t\t" + rs.getString(3) + "\t\t\t" + rs.getDate(2));
+            }
+            rs.close();
+            st.close();
+            Menu.print("Voer het ID in:");
+            proc.setInt(1, scanner.nextInt());
+
+
+            Menu.print("Nieuwe naam:");
+            String name = scanner.nextLine();
+            if (name.length() == 0){
+                name = scanner.nextLine();
+            }
+            proc.setString(2, name);
+            proc.execute();
+            proc.close();
+            c.commit();
+            Menu.print("Aangepast");
+        } catch (SQLException e) {
+            Menu.print(e.toString());
+            Menu.print("Er is wat fout geg0aan! Probeer het later nog eens.");
+        }
     }
 
     /**
@@ -709,7 +735,7 @@ public class DatabaseHandler {
             Menu.print("Aantal dagen terug");
             int numberOfDays = scanner.nextInt();
             getHistoryFromDB(copyId, numberOfDays);
-
+            c.commit();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -808,6 +834,7 @@ public class DatabaseHandler {
             tracks = printTracks(rs);
             rs.close();
             st.close();
+            c.commit();
         }  catch (Exception e){
             Menu.print(e.toString());
             Menu.print("Er is wat fout gegaan! Probeer het later nog eens.");
@@ -958,7 +985,7 @@ public class DatabaseHandler {
         Menu.print("ID\t\t\tNaam\t\tGeboortedatum");
         while (rs.next())
         {
-            Menu.print(rs.getInt(1) + "\t\t\t" + rs.getString(2) + "\t\t\t" + rs.getDate(3));
+            Menu.print(rs.getInt(1) + "\t\t\t" + rs.getString(3) + "\t\t\t" + rs.getDate(2));
         }
         rs.close();
         st.close();
@@ -985,7 +1012,7 @@ public class DatabaseHandler {
         Menu.print("Naam van uitgever:");
         String name = scanner.next();
 
-        PreparedStatement st = c.prepareStatement("SELECT * FROM publisher WHERE organisation LIKE ?");
+        PreparedStatement st = c.prepareStatement("SELECT * FROM publisher WHERE organisation LIKE '%' || ? || '%'");
         st.setString(1, name);
         ResultSet rs = st.executeQuery();
         Menu.print("Optie\t\tUitgever");
@@ -1068,14 +1095,11 @@ public class DatabaseHandler {
     private ArrayList<Integer> printTracks(ResultSet rs) throws SQLException{
         Menu.print("ID\t\t\tTitel\t\tTijdsduur\tArtiestnaam\t\t\tGenre\t\tAlbum_name\t\t\tAlbum_id");
         ArrayList<Integer> tracks = new ArrayList<Integer>();
-        int count = 1;
         while (rs.next())
         {
             tracks.add(rs.getInt(1));
-
             Menu.print(rs.getInt(1) + "\t\t\t" + rs.getString(2) + "\t\t" + rs.getInt(3) + "\t\t\t" + rs.getString(4) + "\t\t" + rs.getString(5) + "\t\t" + rs.getString(6) + "\t\t" + rs.getInt(7));
 
-            count++;
         }
         return tracks;
     }
@@ -1112,7 +1136,7 @@ public class DatabaseHandler {
                 CallableStatement proc = c.prepareCall(query);
 
                 proc.setInt(1, album);
-                proc.setInt(2, tracks.get(choice-1));
+                proc.setInt(2, choice);
                 proc.setInt(3, pos);
 
                 proc.execute();
@@ -1127,7 +1151,11 @@ public class DatabaseHandler {
         CallableStatement proc = c.prepareCall(query);
 
         Menu.print("Title van track:");
-        proc.setString(1, scanner.next());
+        String track = scanner.nextLine();
+        if(track.length() == 0){
+            track = scanner.nextLine();
+        }
+        proc.setString(1, track);
 
         Menu.print("Lengte in seconde:");
         proc.setInt(2, scanner.nextInt());
